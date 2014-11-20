@@ -1,0 +1,798 @@
+In this chapter, we discuss how we integrated the delay line with an \gls{ann} to solve the navigation of an agent through modified versions of the Santa Fe trails in a \gls{crn}. We carry over the \gls{ga} shown in the previous chapter and the minimal delay line length of $N=4$ to implement them as a \gls{crn}. We will also show in here that the increased run time of a \gls{crn} versus a non-\gls{crn} makes the optimization prior to going to a \gls{crn} an important step. 
+
+This chapter starts out by discussing the methodology we used to gather the data, presents the results, and then provides a discussion on the data presented.
+
+\section{Methodology}
+After finding the minimal length of delay line in the non-\gls{crn} simulations, we moved with this length of $N=4$ into the \gls{crn} simulations. We performed these simulations represented in a \gls{crn} with \gls{coel}~\cite{Banda2014-qw}. Each trail and \gls{ann} was evaluated 10 or more times in \gls{coel}. The \gls{crn} \gls{ann} was constructed with a network similar to the one in Figure~\ref{fig:trail_ann_w_dl2} with a couple of exceptions. Figure~\ref{fig:chem_trail_ann_dl4} shows an example of this modified neural network for the chemistry simulations. The node model we use in the \gls{crn} does not require the inverted input so there is a single input node for each delay line stage. This means the total number of nodes in the \gls{crn} is shown Equation~\ref{eq:node_count_crn_eq_crn}.
+
+\begin{equation} \label{eq:node_count_crn_eq_crn}
+n = delay\:line\:length + 4
+\end{equation}
+
+The second exception is the presence of a hidden perceptron. We wanted to evaluate performance to see if the hidden perceptron was necessary in the \gls{ann} in Figure~\ref{fig:trail_ann_w_dl2}. We evaluated performance both with the presence of a hidden layer (a single perceptron) and without a hidden layer completely.
+
+\begin{figure}
+\centering
+\begin{tikzpicture}[->,draw=black!100, node distance=\layerseptikznn]
+    % Based off code form http://www.texample.net/tikz/examples/neural-network/
+    \tikzstyle{every pin edge}=[<-,shorten <=1pt]
+    \tikzstyle{neuron}=[circle,draw=black!50,fill=white!25,minimum size=25pt,inner sep=0pt]
+    \tikzstyle{input neuron}=[neuron, draw=black!50, fill=Accent-5-1];
+    \tikzstyle{output neuron}=[neuron, draw=black!50, fill=Accent-5-3];
+    \tikzstyle{blank neuron}=[neuron, draw=white!50, fill=white!50];
+    \tikzstyle{hidden neuron}=[neuron, draw=black!50, fill=Accent-5-2];
+    \tikzstyle{annot} = [text width=4em, text centered]
+    \tikzstyle{dlbox}=[rectangle,draw=black!50,fill=Accent-5-4];
+    \tikzstyle{input value}=[circle,draw=black!50,fill=Accent-5-5!50,minimum size=25pt,inner sep=0pt];
+
+    % Draw the input layer nodes
+    \node[input neuron] (I-1) at (0,-2) {};
+    \node[input neuron] (I-2) at (0,-3) {};
+    \node[input neuron] (I-3) at (0,-4) {};
+    \node[input neuron] (I-4) at (0,-5) {};
+    
+    % Draw the delay line
+    \node[input value] (X-1) at (-\layerseptikznn, -1) {X};
+    \node[dlbox] (DL-1) at (-\layerseptikznn, -2) {X[0]};
+    \node[dlbox] (DL-2) at (-\layerseptikznn, -3) {X[-1]};
+    \node[dlbox] (DL-3) at (-\layerseptikznn, -4) {X[-2]};
+    \node[dlbox] (DL-4) at (-\layerseptikznn, -5) {X[-3]};
+    
+    % Connect the delay line to itself and the input layer.
+    \draw[->, draw=black!100] (X-1) edge (DL-1);
+    \draw[->, draw=black!100] (DL-1) edge (DL-2);
+    \draw[->, draw=black!100] (DL-2) edge (DL-3);
+    \draw[->, draw=black!100] (DL-3) edge (DL-4);
+    
+    \draw[->, draw=black!100] (DL-1) edge (I-1);
+    \draw[->, draw=black!100] (DL-2) edge (I-2);
+    \draw[->, draw=black!100] (DL-3) edge (I-3);
+    \draw[->, draw=black!100] (DL-4) edge (I-4);
+            
+    
+    % Draw the hidden layer nodes
+        \path[yshift=0.5cm]
+            node[hidden neuron] (H-1) at (\layerseptikznn, -4) {H1};
+
+    % Draw the output layer node
+        \path node[output neuron, pin={[pin edge={->}]right:Forward}] 
+                (O-2) at (\layerseptikznn * 2, -2) {};
+        \path node[output neuron, pin={[pin edge={->}]right:Left}] 
+                (O-3) at (\layerseptikznn * 2, -3) {};
+        \path node[output neuron, pin={[pin edge={->}]right:Right}] 
+                (O-4) at (\layerseptikznn * 2, -4) {};
+        \path node[blank neuron] 
+                (O-5) at (\layerseptikznn * 2, -5) {};
+
+    % Connect every node in the input layer with every node in the
+    % hidden layer.
+    \foreach \source in {1,...,4}
+            \path (I-\source) edge (H-1);
+            
+    \draw[-, draw=violet!100, thick](I-1) -- ($ (I-1) !.75! (O-2) $);
+    \draw[-, draw=violet!100, thick](I-2) -- ($ (I-2) !.75! (O-3) $);
+    \draw[-, draw=violet!100, thick](I-3) -- ($ (I-3) !.75! (O-4) $);
+    \draw[-, draw=violet!100, thick](I-4) -- ($ (I-4) !.75! (O-5) $);
+            
+    \foreach \dest in {2,...,4}{
+        \draw[->, draw=violet!100] ($ (I-1) !.75! (O-2) $) -- (O-\dest.west);
+        \draw[->, draw=violet!100] ($ (I-2) !.75! (O-3) $) -- (O-\dest.west);
+        \draw[->, draw=violet!100] ($ (I-3) !.75! (O-4) $) -- (O-\dest.west);
+        \draw[->, draw=violet!100] ($ (I-4) !.75! (O-5) $) -- (O-\dest.west);
+    }
+
+    % Connect every node in the hidden layer with the output layer
+    \foreach \dest in {2,...,4}
+        \path (H-1) edge (O-\dest);
+
+    % Annotate the layers
+    \node[annot,above of=H-1, node distance=3cm] (hl) {Hidden layer};
+    \node[annot,left of=hl] {Input layer};
+    \node[annot,right of=hl] {Output layer};
+\end{tikzpicture}
+\caption[Delay Line with ANN in Chemistry]{This figure shows the \gls{ann} combined with a 4-input ($N=4$) delay line (on left). This feedforward \gls{ann} has full connections from the input to the hidden layer, input to the output layer, and hidden to the output layer. The delay line has a single input neuron for each stage in a chemistry. Values shift down the delay line where $X[0]$ represents the current input, $X[-1]$ represents the previous input, and so on.}
+\label{fig:chem_trail_ann_dl4}
+\end{figure}
+
+The perceptrons were modeled with Banda's \gls{aasp}~\cite{Banda2014-kg} and the \gls{ann} in a chemistry was modeled after Blout's compartmental chemistries~\cite{Blount_undated-ro}. Using these two systems allowed us to construct a network that is comparable to the one in Figure~\ref{fig:trail_ann_w_dl2} that is comparable to the current state of the art in a \gls{crn}. We chose to represent the delay line in a \gls{crn} with a \gls{mdl}. We did not simulate the system with a \gls{bpl} because the average error for a \gls{bpl} of over two stages is significant compared to a \gls{mdl} of the delay length (see Section~\ref{sec:dl_paper_over_two_stages}). The additional complication of having to manually signal copy between stages of the \gls{mdl} was not a concern for our testing. We were not constrained with the number of inputs and outputs we can have, like other chemical systems.
+
+After finding the best set of \gls{crn} \gls{ann} structures, we wanted to find if the resulting \gls{ann} for that particular trail is specialized or is a generalized solution to these types of tasks. We take the best individual from each trail and then evaluate it on the three other trails as well as Jefferson's John Muir trail (see Figure~\ref{fig:johnmuirtrailimage}) and measure the food consumed. As an example, for the easy trail, we take that individual and run it on the medium, hard, full Santa Fe trail, and full John Muir trail to compare the results. The John Muir trail was limited to 200 moves to match Jefferson's evaluations on the trail where he successfully evolved an \gls{ann} that consumed 89 pieces~\cite{Jefferson1992-ph}.
+
+\section{Results}
+In the previous chapter, we arrived at the conclusion that a delay line of length $N=4$ is sufficient for this task. We mention that the segments were used because they ran faster than the full Santa Fe trail. Figure~\ref{fig:coel_time_benchmark} show the run time for a selected run for all three segments and then run time for the full Santa Fe trail in a \gls{crn} with a \gls{mdl} of length $N=4$. 
+
+\begin{figure}[hbt]
+\centering
+\begin{tikzpicture}
+  \begin{axis}[
+    ybar,
+    xlabel={Santa Fe Trail Type},
+    ylabel={Run Time (hours)},
+    enlargelimits=0.15,
+    symbolic x coords={Easy, Medium, Hard, Full},
+    xtick=data,
+    height=7cm,
+    width=12cm,
+    bar width = 0.75cm,
+    nodes near coords,
+    nodes near coords align={vertical},
+    ]
+        \addplot [fill={Accent-4-1}] coordinates {(Easy, 3.98) (Medium, 4.42) (Hard, 4.23) (Full, 15.0)};
+        
+    \end{axis}
+\end{tikzpicture}
+\caption[COEL Run Time Benchmark]{Plot showing the run time for each of the trail segments for a full run of 100 generations. Notice how the 400 maximum number of moves causes the full Santa Fe trail to take a much longer time than the four other trail segments that only have a maximum moves of 100.}
+\label{fig:coel_time_benchmark}
+\end{figure}
+
+We also show a table of the first ten generations of a full Santa Fe trail run in Figure~\ref{fig:coel_benchmark_chart} and Table~\ref{tab:coel_benchmark_times}. Each run was executed with the same \gls{ga} parameters and same \gls{crn}. The only difference was the changing trails and the full Santa Fe trail had a maximum moves of 400 compared to the typical 100 for each of the segments. These 300 additional moves cause the time for the full trail execution to be approximately 3.5 times longer than the three trail segments.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}
+    \begin{axis}[
+    ybar,
+    xlabel={Generation},
+    ylabel={Run Time (min)},
+    xticklabel style={/pgf/number format/fixed},
+    cycle multi list={Mark-Dark2-4},
+    legend style={
+        cells={anchor=east},
+        legend pos=outer north east,
+    },
+    scale only axis, % The height and width argument only apply to the actual axis
+    height=7.313cm,
+    width=13cm,
+    ]
+
+        \addplot[fill={Accent-5-1}] plot coordinates {
+        (1, 3.75)
+        (2, 6.02)
+        (3, 11.92)
+        (4, 8.85)
+        (5, 8.77)
+        (6, 3.9)
+        (7, 8.62)
+        (8, 7.25)
+        (9, 3.50)
+        (10, 5.37)
+        };
+
+    \end{axis}
+\end{tikzpicture}
+\caption[Run Time Benchmark of COEL Generations]{Plot showing the run time for the first 10 generations of a full Santa Fe trail run with \gls{ga} configuration similar to non-\gls{crn} configuration. These results are itemized in Table~\ref{tab:coel_benchmark_times}.}
+\label{fig:coel_benchmark_chart}
+\end{figure}
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{cc}
+ \textbf{Generation} & \textbf{Run Time ((HH:)MM:SS)}  \\ \hline
+1 & 03:45 \\
+2 & 06:01 \\
+3 & 11:55 \\
+4 & 08:51 \\
+5 & 08:46 \\
+6 & 03:54 \\
+7 & 08:37 \\
+8 & 07:15 \\
+9 & 03:30 \\
+10 & 05:22 \\ \hline
+\textbf{Mean First 10 Generations} & 06:48 \\
+\textbf{Total First 10 Generations} & 01:07:56 \\ \hline \hline
+\textbf{Mean 100 Generations} & 08:45 \\
+\textbf{Total 100 Generations} & 14:42:56
+\end{tabular}
+\caption[Run Time Benchmark of COEL Generations]{Table showing generation run times for \gls{coel} \gls{crn} on the first 10 generations and summary of full run of Santa Fe trail with similar non-\gls{crn} \gls{ga} configuration. Compare table to results of Figure~\ref{fig:trail_runner_do_benchmark} to see that an entire run can finish in a single generation of the \gls{crn} simulation. The individual generations are plotted in Figure~\ref{fig:coel_benchmark_chart}.}
+\label{tab:coel_benchmark_times}
+\end{table}
+
+\clearpage
+Now, presenting a delay line length of $N=4$ in a \gls{crn}. We executed tests both with a hidden neuron and without a hidden neuron once implemented in a \gls{crn} to see if the hidden neuron was a necessity for solving this task. The next series of charts show the food consumed for each version of the trail and compares it to Koza's original results and the results from the non-\gls{crn} come from Figure~\ref{fig:sft_segment_dl_len_sweeps} where \gls{mdl} length is 4. Figure~\ref{fig:crn_results_max_dl4_hl1} shows the maximum individual performance of the trail versus the non-\gls{crn} implementation for each trail segment and the full Santa Fe trail. Figure~\ref{fig:crn_results_mean_dl4_hl1} show the mean and standard deviation. These charts are normalized using the maximum food available on a given trail and both composed of 10 or more \gls{crn} runs.
+
+\begin{figure}[hbt]
+\centering
+\begin{tikzpicture}
+    \begin{axis}[
+    ybar,
+    bar width = 0.3cm,
+    xlabel={Santa Fe Trail Type},
+    ylabel={Maximum Norm. Food Consumed},
+    legend columns=4,
+    legend style={
+        cells={anchor=east},
+        legend pos=outer south,
+    },
+    scale only axis, % The height and width argument only apply to the actual axis
+    symbolic x coords={Easy, Medium, Hard, Full},
+    cycle multi list={Dark-2-4},
+    enlarge x limits=0.25,
+    enlarge y limits=false,
+    ymin=0,
+    ymax=1.1,
+    xtick=data,
+    height=7.313cm,
+    width=13cm,
+    ymajorgrids,
+    area legend
+    ]
+    
+        \addplot [fill={Accent-4-1}] 
+            table [x=x, y=koza_max_n1, col sep=comma] {data/coel_results.csv};
+            
+        \addplot [fill={Accent-4-2}, postaction={
+                pattern=horizontal lines,
+                pattern color=black!50,
+            }] 
+            table [x=x, y=ncrn_max_n1, col sep=comma] {data/coel_results.csv}; 
+            
+        \addplot [fill={Accent-4-3}, postaction={
+                pattern=north east lines,
+                pattern color=black!50,
+            }] 
+            table [x=x, y=crn1_max_n1, col sep=comma] {data/coel_results.csv};
+            
+        \addplot [fill={Accent-4-4}, postaction={
+                pattern=grid,
+                pattern color=black!50,
+            }] 
+            table [x=x, y=crn0_max_n1, col sep=comma] {data/coel_results.csv};
+        
+        \legend{Koza, Non-CRN, CRN 1 Hidden, CRN 0 Hidden}
+    
+    \end{axis}
+\end{tikzpicture}
+\caption[Maximum Normalized Food Results with CRN]{Plot showing the normalized maximum food consumed for each trail and each \gls{ann} configuration on the Santa Fe trail. The maximum food obtained for each trail seems meet or exceed the performance of that with a hidden layer with the excpetion of the easy trail.}
+\label{fig:crn_results_max_dl4_hl1}
+\end{figure}
+
+\begin{figure}[hbt]
+\centering
+\begin{tikzpicture}
+    \begin{axis}[
+    ybar,
+    bar width = 0.3cm,
+    xlabel={Santa Fe Trail Type},
+    ylabel={Average Norm. Food Consumed},
+    legend columns=4,
+    legend style={
+        cells={anchor=east},
+        legend pos=outer south
+    },
+    scale only axis, % The height and width argument only apply to the actual axis
+    symbolic x coords={Easy, Medium, Hard, Full},
+    enlarge x limits=0.25,
+    ymin=0,
+    ymax=1.1,
+    xtick=data,
+    height=7.313cm,
+    width=13cm,
+    ymajorgrids,
+    area legend,
+    ]
+    
+        \addplot [fill={Accent-4-1}, error bars/.cd, y dir = both, y explicit] 
+            table [x=x, y=koza_mean_n1, y error=koza_std_n1, col sep=comma] {data/coel_results.csv};
+            
+        \addplot [fill={Accent-4-2}, postaction={
+                pattern=horizontal lines,
+                pattern color=black!50,
+            }, error bars/.cd, y dir = both, y explicit] 
+            table [x=x, y=ncrn_mean_n1, y error=ncrn_std_n1, col sep=comma] {data/coel_results.csv}; 
+            
+        \addplot [fill={Accent-4-3}, postaction={
+                pattern=north east lines,
+                pattern color=black!50,
+            }, error bars/.cd, y dir = both, y explicit] 
+            table [x=x, y=crn1_mean_n1, y error=crn1_std_n1, col sep=comma] {data/coel_results.csv};
+            
+        \addplot [fill={Accent-4-4}, postaction={
+                pattern=grid,
+                pattern color=black!50,
+            }, error bars/.cd, y dir = both, y explicit] 
+            table [x=x, y=crn0_mean_n1, y error=crn0_std_n1, col sep=comma] {data/coel_results.csv};  
+            
+        \legend{Koza, Non-CRN, CRN 1 Hidden, CRN 0 Hidden}
+    
+    \end{axis}
+\end{tikzpicture}
+\caption[Mean Normalized Food Results with CRN]{Plot showing the normalized average food consumed for each trail and each \gls{ann} configuration on the Santa Fe trail. Error bars are standard deviation. It appears, on average, that a hidden layer helps the system find more food for each run. The removal of the hidden layer also seems to produce a wider set of possible values versus the hidden layer having a tighter standard deviation which implies more consistent results.}
+\label{fig:crn_results_mean_dl4_hl1}
+\end{figure}
+
+\clearpage
+We now show the probability of finding food on each of the trail segments that tests were ran against. Figure~\ref{fig:prob_finding_food_plot} takes the pieces of food on each trail and divides it by the total number of squares on the trail. For the segments, there are 256 squares and the full Santa Fe trail contains 1024 squares. The John Muir trail with the same pieces of food in the same area has the same probability as the full Santa Fe trail.
+
+\begin{figure}[hbt]
+\centering
+\begin{tikzpicture}
+    \begin{axis}[
+    ybar,
+    bar width = 0.75cm,
+    xlabel={Santa Fe Trail Type},
+    ylabel={Probability of Finding Food},
+    yticklabel style={/pgf/number format/fixed},
+    legend style={
+        cells={anchor=east},
+        legend pos=outer north east,
+    },
+    scale only axis, % The height and width argument only apply to the actual axis
+    symbolic x coords={Easy, Medium, Hard, Full},
+    enlarge x limits=0.25,
+    ymin=0,
+    xtick=data,
+    height=7cm,
+    width=12cm,
+    nodes near coords,
+    nodes near coords align={vertical},
+    ]
+    
+        \addplot [fill={Accent-4-1}] table [x=x, y=food_per_area, col sep=comma] {data/coel_results.csv};
+    
+    \end{axis}
+\end{tikzpicture}
+\caption[Probability of Food on Trail]{Plot showing the probability of finding food on each trail. This is calculated by taking the maximum amount of food on each trail and dividing it by the total number of squares on each trail. Notice how the full Santa Fe trail has the lowest probability of randomly finding food and the medium has almost twice the probability of randomly finding food compared to all three other trails.}
+\label{fig:prob_finding_food_plot}
+\end{figure}
+
+\clearpage
+Figure~\ref{fig:crn_results_max_percent_error} and Figure~\ref{fig:crn_results_from_noncrn_percent_error} show the percentage error calculated using two different methods. The first is is the percent error from the maximum food available. The second percent error is the percent error from the \gls{crn} results. The results for the non-\gls{crn} simulations and the \gls{crn} simulations are summarized in Table~\ref{tab:santa_fe_summary_table}.
+
+\begin{figure}[hbt]
+\centering
+\begin{tikzpicture}
+    \begin{axis}[
+    ybar,
+    bar width = 0.5cm,
+    xlabel={Santa Fe Trail Type},
+    ylabel={Percent Error},
+    legend style={
+        cells={anchor=east},
+        legend pos=north east,
+    },
+    scale only axis, % The height and width argument only apply to the actual axis
+    symbolic x coords={Easy, Medium, Hard, Full},
+    cycle multi list={Dark-2-4},
+    enlarge x limits=0.25,
+    enlarge y limits=false,
+    ymin=0,
+    ymax=1.1,
+    xtick=data,
+    height=7.313cm,
+    width=13cm,
+    ymajorgrids,
+    area legend,
+    ]
+    
+        \addplot [fill={Accent-4-2}, postaction={
+                pattern=horizontal lines,
+                pattern color=black!50,
+            }] 
+            table [x=x, y=non_crn_pe1, col sep=comma] {data/coel_results.csv};
+            
+        \addplot [fill={Accent-4-3}, postaction={
+                pattern=north east lines,
+                pattern color=black!50,
+            }] 
+            table [x=x, y=crn1_pe1, col sep=comma] {data/coel_results.csv}; 
+            
+        \addplot [fill={Accent-4-4}, postaction={
+                pattern=grid,
+                pattern color=black!50,
+            }] 
+            table [x=x, y=crn0_pe1, col sep=comma] {data/coel_results.csv};
+            
+        
+        \legend{Non-CRN, CRN 1 Hidden, CRN 0 Hidden}
+    
+    \end{axis}
+\end{tikzpicture}
+\caption[CRN Percent Error Against Maximum Available]{Plot showing the percent error from maximum amount of food available on each trail segment. Even the the non-\gls{crn} implementation struggles with some of the trails with larger amounts of food like the medium and full trails.}
+\label{fig:crn_results_max_percent_error}
+\end{figure}
+
+\begin{figure}[hbt]
+\centering
+\begin{tikzpicture}
+    \begin{axis}[
+    ybar,
+    bar width = 0.6cm,
+    xlabel={Santa Fe Trail Type},
+    ylabel={Percent Error},
+    legend style={
+        cells={anchor=east},
+        legend pos=north east,
+    },
+    scale only axis, % The height and width argument only apply to the actual axis
+    symbolic x coords={Easy, Medium, Hard, Full},
+    cycle multi list={Dark-2-4},
+    enlarge x limits=0.25,
+    enlarge y limits=false,
+    ymin=0,
+    ymax=1.1,
+    xtick=data,
+    height=7.313cm,
+    width=13cm,
+    ymajorgrids,
+    area legend
+    ]
+            
+        \addplot [fill={Accent-4-3}, postaction={
+                pattern=north east lines,
+                pattern color=black!50,
+            }] 
+            table [x=x, y=crn1_pe2, col sep=comma] {data/coel_results.csv}; 
+            
+        \addplot [fill={Accent-4-4}, postaction={
+                pattern=grid,
+                pattern color=black!50,
+            }] 
+            table [x=x, y=crn0_pe2, col sep=comma] {data/coel_results.csv};
+        
+        \legend{CRN 1 Hidden, CRN 0 Hidden}
+    
+    \end{axis}
+\end{tikzpicture}
+\caption[CRN Percent Error Against Non-CRN]{Plot showing the percent error from the maximum performance of the non-\gls{crn}. On the segments, the \gls{crn} version with a hidden layer seems to beat or perform at the same level as the version without a hidden layer. For the full trail, it seems that the hidden layer does not provide an addvantage.}
+\label{fig:crn_results_from_noncrn_percent_error}
+\end{figure}
+
+\begin{table}[hbt]
+\centering
+\begin{tabular}{llrrrr}
+\textbf{Trail}      &                                                               & \multicolumn{1}{l}{\textbf{Koza}} & \multicolumn{1}{l}{\textbf{Non-CRN}} & \multicolumn{1}{l}{\textbf{CRN}} & \multicolumn{1}{l}{\textbf{\begin{tabular}[c]{@{}l@{}}CRN No \\ Hidden\end{tabular}}} \\ \hline
+\textbf{Easy}       & Max                                                           & 24                                & 24                                   & 24                               & 11                                                                                    \\
+                    & Mean                                                          & 24.00                             & 20.33                                & 14.75                            & 11.00                                                                                 \\
+                    & Std. Dev                                                      & 0.00                              & 3.64                                 & 3.52                             & 0.00                                                                                  \\
+                    & \begin{tabular}[c]{@{}l@{}}\% Error\\ (Max)\end{tabular}      & n/a                               & 0.00\%                               & 0.00\%                           & 54.17\%                                                                               \\
+                    & \begin{tabular}[c]{@{}l@{}}\% Error\\ (from CRN)\end{tabular} & n/a                               & n/a                                  & 0.00\%                           & 54.17\%                                                                               \\ \hline
+\textbf{Medium}     & Max                                                           & 38                                & 33                                   & 32                               & 32                                                                                    \\
+                    & Mean                                                          & 38.00                             & 31.47                                & 23.40                            & 24.60                                                                                 \\
+                    & Std. Dev                                                      & 0.00                              & 2.09                                 & 6.24                             & 8.80                                                                                  \\
+                    & \begin{tabular}[c]{@{}l@{}}\% Error\\ (Max)\end{tabular}      & n/a                               & 13.16\%                              & 15.79\%                          & 15.79\%                                                                               \\
+                    & \begin{tabular}[c]{@{}l@{}}\% Error\\ (from CRN)\end{tabular} & n/a                               & n/a                                  & 3.03\%                           & 3.03\%                                                                                \\ \hline
+\textbf{Hard}       & Max                                                           & 23                                & 22                                   & 11                               & 11                                                                                    \\
+                    & Mean                                                          & 23.00                             & 11.68                                & 8.00                             & 4.60                                                                                  \\
+                    & Std. Dev                                                      & 0.00                              & 3.64                                 & 1.35                             & 4.72                                                                                  \\
+                    & \begin{tabular}[c]{@{}l@{}}\% Error\\ (Max)\end{tabular}      & n/a                               & 4.35\%                               & 52.17\%                          & 52.17\%                                                                               \\
+                    & \begin{tabular}[c]{@{}l@{}}\% Error\\ (from CRN)\end{tabular} & n/a                               & n/a                                  & 50.00\%                          & 50.00\%                                                                               \\ \hline
+\textbf{Full Trail} & Max                                                           & 89                                & 62                                   & 40                               & 51                                                                                    \\
+                    & Mean                                                          & 89.00                             & 45.80                                & 30.70                            & 18.30                                                                                 \\
+                    & Std. Dev                                                      & 0.00                              & 13.73                                & 5.58                             & 14.11                                                                                  \\
+                    & \begin{tabular}[c]{@{}l@{}}\% Error\\ (Max)\end{tabular}      & n/a                               & 30.34\%                              & 55.06\%                          & 42.70\%                                                                               \\
+                    & \begin{tabular}[c]{@{}l@{}}\% Error\\ (from CRN)\end{tabular} & n/a                               & n/a                                  & 35.48\%                          & 17.74\%                                                                              
+\end{tabular}
+\caption[Summary of Results]{Table showing the summary of food consumed for each trail and each network type. The percent error is calculated in two parts. The first is from the total amount of food available in each segment and the second is the percent error from the \gls{crn} configurations. The \gls{crn} with a hidden layer (``CRN'') performs better or the same as each trail than the no hidden layer configuration except for the full trail. The lack of a hidden layer on the easy trail negatively affects the agent's ability to gather food.}
+\label{tab:santa_fe_summary_table}
+\end{table}
+
+\clearpage
+Figure~\ref{fig:trail_comparison_crn1} shows an evaluation of taking the best individual from each evaluation in the \gls{crn} with a single hidden neuron and evaluating that individual on the other trails. Figure~\ref{fig:trail_comparison_crn0} shows the same without the hidden neuron.
+
+\begin{figure}[hbt]
+\centering
+\begin{tikzpicture}
+    \begin{axis}[
+    ybar,
+    bar width = 0.3cm,
+    xlabel={Best Individual Source},
+    ylabel={Percentage of Food Consumed},
+    legend style={
+        cells={anchor=east},
+        legend pos=north east,
+    },
+    scale only axis, % The height and width argument only apply to the actual axis
+    symbolic x coords={Easy, Medium, Hard, Full},
+    enlarge x limits=0.25,
+    ymin=0,
+    ymax=1.1,
+    xtick=data,
+    height=7.313cm,
+    width=13cm,
+    ymajorgrids,
+    legend columns=2,
+    area legend
+    ]
+        \addplot [fill={Accent-5-1},] 
+            table [x=x_best, y=easy_pct, col sep=comma] {data/trail_comp.csv};
+            
+        \addplot [fill={Accent-5-2}, postaction={
+                pattern=horizontal lines,
+                pattern color=black!50,
+            }] 
+            table [x=x_best, y=med_pct, col sep=comma] {data/trail_comp.csv}; 
+            
+        \addplot [fill={Accent-5-3}, postaction={
+                pattern=north east lines,
+                pattern color=black!50,
+            }] 
+            table [x=x_best, y=hard_pct, col sep=comma] {data/trail_comp.csv};
+            
+        \addplot [fill={Accent-5-4}, postaction={
+                pattern=grid,
+                pattern color=black!50,
+            }] 
+            table [x=x_best, y=full_pct, col sep=comma] {data/trail_comp.csv};  
+        
+        \addplot [fill={Accent-5-5}, postaction={
+                pattern=north west lines,
+                pattern color=black!50,
+            }] 
+            table [x=x_best, y=jeff_pct, col sep=comma] {data/trail_comp.csv};  
+            
+        \legend{Easy, Medium, Hard, Santa Fe, John Muir}
+    
+    \end{axis}
+\end{tikzpicture}
+\caption[Best CRN with Hidden Individual Evaluated on Other Trails]{Plot comparing the best individuals performance from each trail against evaluation on other trails for the \gls{ann} in a \gls{crn} with one hidden perceptron. Each group of bars, such as ``Easy'' on x-axis, correspond to the  same individual ran on a different trail. }
+\label{fig:trail_comparison_crn1}
+\end{figure}
+
+\begin{figure}[hbt]
+\centering
+\begin{tikzpicture}
+    \begin{axis}[
+    ybar,
+    bar width = 0.3cm,
+    xlabel={Best Individual Source},
+    ylabel={Percentage of Food Consumed},
+    legend style={
+        cells={anchor=east},
+        legend pos=north east,
+    },
+    scale only axis, % The height and width argument only apply to the actual axis
+    symbolic x coords={Easy, Medium, Hard, Full},
+    enlarge x limits=0.25,
+    ymin=0,
+    ymax=1.1,
+    xtick=data,
+    height=7.313cm,
+    width=13cm,
+    ymajorgrids,
+    legend columns=2,
+    area legend
+    ]
+        
+        \addplot [fill={Accent-5-1},] 
+            table [x=x_best, y=easy_n0_pct, col sep=comma] {data/trail_comp.csv};
+            
+        \addplot [fill={Accent-5-2}, postaction={
+                pattern=horizontal lines,
+                pattern color=black!50,
+            }] 
+            table [x=x_best, y=med_n0_pct, col sep=comma] {data/trail_comp.csv}; 
+            
+        \addplot [fill={Accent-5-3}, postaction={
+                pattern=north east lines,
+                pattern color=black!50,
+            }] 
+            table [x=x_best, y=hard_n0_pct, col sep=comma] {data/trail_comp.csv};
+            
+        \addplot [fill={Accent-5-4}, postaction={
+                pattern=grid,
+                pattern color=black!50,
+            }] 
+            table [x=x_best, y=full_n0_pct, col sep=comma] {data/trail_comp.csv};  
+        
+        \addplot [fill={Accent-5-5}, postaction={
+                pattern=north west lines,
+                pattern color=black!50,
+            }] 
+            table [x=x_best, y=jeff_n0_pct, col sep=comma] {data/trail_comp.csv};  
+            
+        \legend{Easy, Medium, Hard, Santa Fe, John Muir}
+    
+    \end{axis}
+\end{tikzpicture}
+\caption[Best Individual No Hidden Evaluated on Other Trails]{Plot comparing the best individuals performance from each trail against evaluation on other trails for the \gls{ann} in a \gls{crn} without a hidden layer. Each group of bars, such as ``Easy'' on x-axis, correspond to the  same individual ran on a different trail. }
+\label{fig:trail_comparison_crn0}
+\end{figure}
+
+\clearpage
+Figure~\ref{fig:hist_with_hidden_layer} and Figure~\ref{fig:hist_no_hidden_layer} show histograms of the count of evolution runs that consumed each amount of food.
+
+\begin{figure}[hbt]
+\centering
+\begin{subfigure}[b]{0.45\textwidth}
+    \begin{tikzpicture}
+        \begin{axis}[
+            ybar,
+            xtick={11,13,17,24},
+            symbolic x coords={11,13,17,24},
+            enlarge x limits=0.25,
+            xlabel={Food Consumed},
+            ylabel={Count},
+            ybar,
+            width=6cm,
+        ]
+        \addplot[fill={Accent-5-1}] plot coordinates {(11, 1) (13, 7) (17, 3) (24, 1)};
+        
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Easy Trail}
+\end{subfigure}
+\begin{subfigure}[b]{0.45\textwidth}
+    \begin{tikzpicture}
+        \begin{axis}[
+            ybar,
+            xtick={17, 18, 27, 29, 32},
+            symbolic x coords={17, 18, 27, 29, 32},
+            enlarge x limits=0.25,
+            xlabel={Food Consumed},
+            ylabel={Count},
+            ybar,
+            width=6cm,
+            xminorticks=true,
+            xmajorticks=true,
+        ]
+        \addplot[fill={Accent-5-2}] plot coordinates {(17, 2) (18, 3) (27, 1) (29, 3) (32, 1)};
+        
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Medium Trail}
+\end{subfigure}
+
+\vspace{1cm}
+
+\begin{subfigure}[b]{0.45\textwidth}
+    \begin{tikzpicture}
+        \begin{axis}[
+            ybar,
+            xtick={7, 9, 11},
+            symbolic x coords={7, 9, 11},
+            enlarge x limits=0.25,
+            xlabel={Food Consumed},
+            ylabel={Count},
+            ybar,
+            width=6cm,
+            xminorticks=true,
+            xmajorticks=true,
+        ]
+        \addplot[fill={Accent-5-3}] plot coordinates {(7, 7) (9, 4) (11, 1)};
+        
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Hard Segment}
+\end{subfigure}
+\begin{subfigure}[b]{0.45\textwidth}
+    \begin{tikzpicture}
+        \begin{axis}[
+            ybar,
+            xtick={24, 29, 30, 31, 35, 40},
+            symbolic x coords={24, 29, 30, 31, 35, 40},
+            enlarge x limits=0.25,
+            xlabel={Food Consumed},
+            ylabel={Count},
+            ybar,
+            width=6cm,
+            xminorticks=true,
+            xmajorticks=true,
+        ]
+        \addplot[fill={Accent-5-4}] plot coordinates {(24, 3) (29,1) (30,1) (31,1) (35,2) (40,1)};
+        
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Full Trail}
+\end{subfigure}
+
+\caption[Histogram of Food with Hidden Layer]{Set of charts showing the number of evolution runs with elite individuals from \gls{crn} with a hidden layer collecting each amount of food. The top performers on each trail are only one individual, but there are other values not far below the top performer. Out of all the runs on each trail, only one \gls{ga} run lead to the top performer.}
+\label{fig:hist_with_hidden_layer}
+\end{figure}
+
+
+\begin{figure}[hbt]
+\centering
+\begin{subfigure}[b]{0.45\textwidth}
+    \begin{tikzpicture}
+        \begin{axis}[
+            ybar,
+            xtick={11},
+            symbolic x coords={11},
+            enlarge x limits=0.25,
+            xlabel={Food Consumed},
+            ylabel={Count},
+            ybar,
+            width=6cm,
+        ]
+        \addplot[fill={Accent-5-1}] plot coordinates {(11,10)};
+        
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Easy Trail}
+\end{subfigure}
+\begin{subfigure}[b]{0.45\textwidth}
+    \begin{tikzpicture}
+        \begin{axis}[
+            ybar,
+            xtick={12, 28, 29, 31, 32},
+            symbolic x coords={12, 28, 29, 31, 32},
+            enlarge x limits=0.25,
+            xlabel={Food Consumed},
+            ylabel={Count},
+            ybar,
+            width=6cm,
+            xminorticks=true,
+            xmajorticks=true,
+        ]
+        \addplot[fill={Accent-5-2}] plot coordinates {(12,3) (28,1) (29,3) (31,1) (32,2)};
+        
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Medium Trail}
+\end{subfigure}
+
+\vspace{1cm}
+
+\begin{subfigure}[b]{0.45\textwidth}
+    \begin{tikzpicture}
+        \begin{axis}[
+            ybar,
+            xtick={0,1,2,9,11},
+            symbolic x coords={0,1,2,9,11},
+            enlarge x limits=0.25,
+            xlabel={Food Consumed},
+            ylabel={Count},
+            ybar,
+            width=6cm,
+            xminorticks=true,
+            xmajorticks=true,
+        ]
+        \addplot[fill={Accent-5-3}] plot coordinates {(0,1) (1,4) (2,1) (9,2) (11,2)};
+        
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Hard Segment}
+\end{subfigure}
+\begin{subfigure}[b]{0.45\textwidth}
+    \begin{tikzpicture}
+        \begin{axis}[
+            ybar,
+            xtick={11, 18, 37, 51},
+            symbolic x coords={11, 18, 37, 51},
+            enlarge x limits=0.25,
+            xlabel={Food Consumed},
+            ylabel={Count},
+            ybar,
+            width=6cm,
+            xminorticks=true,
+            xmajorticks=true,
+        ]
+        \addplot[fill={Accent-5-4}] plot coordinates {(11,7) (18,1) (37,1) (51,1)};
+        
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Full Trail}
+\end{subfigure}
+
+\caption[Histogram of Food with No Hidden Layer]{Set of charts showing the number of evolution runs with elite individuals from \gls{crn} without a hidden layer collecting each amount of food. For easy, no \gls{ga} run lead to varying performance. On medium and hard, more than a single \gls{ga} evaluation lead to a top performing individual and the full trail has a spread of values with three outliers above the typical food consumed of 11. This suggests further \gls{ga} refinement may improve the results.}
+\label{fig:hist_no_hidden_layer}
+\end{figure}
+
+\clearpage
+
+\section{Discussion}
+The timing evaluation in Figure~\ref{fig:coel_time_benchmark} and Table~\ref{tab:coel_benchmark_times} shows the importance of the preliminary research of these simulations in the non-\gls{crn} environment. One fact we mentioned earlier in this chapter is the long run time that the \gls{crn} simulations can take compared to the time it takes to perform a similar simulation in a non-\gls{crn} environment. A single generation of a run in a \gls{crn} takes longer than an entire run of 100 generations in trail runner. Even the fastest generation in the \gls{crn} simulation took more than one and a half times longer than the tests with the non-\gls{crn} tools. We can determine an approximate time frame it would have taken to perform this same optimization in a \gls{crn}. 
+
+As an example calculation, assume that we take the minimum number of \gls{ga} evaluations for each the three trail segment, 70 runs, and the full Santa Fe trail, 25 runs. This is performed across 15 delay line lengths from 2 all the way up to 16. We can approximate the total run time by using the minimum time for all three segments ($239$ minutes) to arrive at $15 \times (70 \times 3 \times (239) + 25 \times (902)) = 1,091,100$ minutes. This is over two years. If we assume that we could run ten of these jobs in parallel, this still results in around eleven weeks to complete the same set of simulations we accomplished in a fraction of the time by evaluating the \gls{ga} performance in trail runner prior to moving the networks to a \gls{crn}.
+
+We now take the delay line of length four and look at the results in a \gls{crn}. The two charts with these results are the normalized maximum food consumed and the normalized average food consumed in Figure~\ref{fig:crn_results_max_dl4_hl1} and Figure~\ref{fig:crn_results_mean_dl4_hl1}, respectively. Looking at the maximums first, we get the same performance as the non-\gls{crn} \gls{ann} only on the easy trail for the \gls{crn} \gls{ann} with one hidden layer. From the maximums, there is not a clear advantage to the addition of the hidden neuron. In the medium and hard trails, the performance of no hidden layer is able to match that having a hidden layer. In the case of the full Santa Fe trail, no hidden neuron even outperforms the \gls{ann} with a hidden neuron.
+
+For the medium and hard trail, the hidden neuron does not seem to lend an advantage from the maximum values in Figure~\ref{fig:crn_results_max_dl4_hl1}. Looking at the means (Figure~\ref{fig:crn_results_mean_dl4_hl1}), the maximum performance for that particular individual on the hard trail seems to be an outlier compared to the average performance on the trail. With the wide standard deviation on all of the no hidden layer \gls{crn} networks, except for the easy, it seems that individuals may perform that well, but vary widely within the tests. For the medium, the average food consumed without a hidden perceptron seems to outperform having the perceptron with only a slightly wider standard deviation. Why is this the case? A potential explanation is the probability of even finding food on the medium trail.
+
+Figure~\ref{fig:prob_finding_food_plot} shows the probability of finding a food on any of the given trails. Notice that the medium has a probability that is almost twice as large as any of the other trails. This means that a non-optimal individual on the trail has a higher possibility of collecting some amount of food on the trail. With the wide standard deviations for the no hidden layer \gls{crn} individuals, it seems that some of the performers in this group could be low performing individuals wandering and finding food on the trail. This may be the case for some of the \gls{crn} with a wider standard deviation. That said though, there are other instances for both with and without a hidden layer in a \gls{crn} that a random search seems less likely with a tighter mean.
+
+Next, we show the percent error for the non-\gls{crn} and both \gls{crn} models calculated from Koza's results in Figure~\ref{fig:crn_results_max_percent_error}. We see that the non-\gls{crn} perform decently on the three segments, only getting over 20\% error on the full trail. Another view to look at this data is using the non-\gls{crn} results as the baseline for the percent error and that is shown in Figure~\ref{fig:crn_results_from_noncrn_percent_error}. These results are also summarized in Table~\ref{tab:santa_fe_summary_table}.
+
+Looking at Figure~\ref{fig:crn_results_from_noncrn_percent_error} and Table~\ref{tab:santa_fe_summary_table}, it seems that for the \gls{crn} with a hidden neuron, we achieve a percent error of 50\% or less for all of the trails. Excluding the hard and full trail, the \gls{crn} with a hidden neuron is able to navigate the trail with less than 10\% error. For the \gls{crn} \gls{ann} without a hidden neuron, the percent error is less than 60\% across all trails.  At least for the easy trail, where probability of randomly finding food seems less at play, we can conclude that our \gls{crn} with a hidden neuron in the \gls{ann} has solved a simpler version of this problem. Now, we will examine performance for the best network on other trails.
+
+Figure~\ref{fig:trail_comparison_crn1} shows the performance of taking the best individual from each \gls{ann} and trail evaluation and grading performance on the other trails. Looking at the results with a hidden neuron first, it seems that the strategies evolved are rather specific to each of the trails. The top performer for each group is the individual who was evolved on the trail, with the exception of the full trail. In the full trail, the individual evolved for this trail actually consumes a greater percentage of the trail. This is likely due to the decreased area of the trail: 16x16 in the easy trail versus 32x32 in the full trail. The smaller area means that an agent can wrap around the edge of the trail with fewer moves thus consuming more food in the limited number of moves.
+
+Figure~\ref{fig:trail_comparison_crn0} shows the same results without a hidden layer. Results for the medium are similar to the \gls{crn} with a hidden layer where it performs the best, but this is not the case for the other trails. With the easy, it seems that the agent consumes all food in front of it and at the first gap, it gets stuck and spins. The percentages of food consumed correspond exactly to the amount of food until the first gap for each trail. The hard results seem more likely that a wandering search is at play. With medium having the highest probability of finding food, it makes sense that wandering the trail for pieces and some reasonable turning strategy would find food. For the full trail, it is not as clear to make a conclusion.
+
+On the full trail evaluation without a hidden layer, it seems that there are a couple possibilities with these results. One is that the agent actually learned a method to solve the trail, but this seems unlikely. If this was the case, we would expect to see greater performance on the easier John Muir trail or the same on the easy segment of the Santa Fe trail. The more likely scenario is there was a wandering agent who got particular lucky on the full Santa Fe trail. This makes sense for the other trails, but this does not seem consistent in the medium trail. For the agent to get as much food as it did on the full Santa Fe trail, it would have had to make turns of some sort when it encountered food or a pattern of food then with food going away. It seems possible that if an agent got caught on a row that contained now food, it may just continue forward until it runs out of moves because it will never consume any more food on the row. Getting stuck on the wrong row seems like a potential explanation for these particular results.
+
+Figure~\ref{fig:hist_with_hidden_layer} and Figure~\ref{fig:hist_no_hidden_layer} show the number of individuals consuming each amount of food for with and without a hidden perceptron. In the results with a hidden peerceptron, we see that only one individaul accounted for the top performer on each trail. Others were not far behind of achieveing the top performance though with the easy trail being the largest gap. The hidden trail shows similar results with the exception of the full trail. The lack of a hidden neuron neuron on the hidden trail seems to point more towards a wandering individual scenario where the top two individuals at 37 and 51 pieces of food consumed had a lucky wandering strategy.
+
+In summary, it seems that we have shown that we can partially solve the trails. In the case of the easy trail, we can conclude that we did solve this trail with the \gls{crn} with a hidden neuron consuming 100\% of the available food. For the medium, hard, and full trails, it is difficult to conclude if there was an individual who actually solved the trail or if there is strategic wandering of the trail leading to optimal values of food consumed. Based off the results, it seems that the addition of a hidden neuron seems to provide a slight edge in terms of strategic food gathering rather than wandering with luck. With the evolution charts presented by Jefferson and Koza, it seems that strategic wandering did occur to an extent early in their algorithms, but was eventually optimized out of the best individual.
+
+Another factor to consider is the \gls{ga} used on these trails. The \gls{ga} is similar to the one used on the non-\gls{crn} and did not go through the thorough optimization that the non-\gls{crn} \gls{ga} did to arrive at the ideal values. With the difference in how these two systems are implemented in a non-\gls{crn} and \gls{crn} environment, futher optimization of the \gls{ga} in a \gls{crn} would likely lead to better results. As shown in Figure~\ref{fig:coel_time_benchmark} and discussed earlier in this section,  such an optimization consumes a substantial amount of time with present models for \glspl{crn}. In addition, the non-\gls{crn} simulations were permitted to run for more than the limited 100 genrations we did in a \gls{crn} due to computational time. As the models and computational power continue to mature, this optimization may be more practical at a future time.

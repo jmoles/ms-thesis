@@ -1,0 +1,220 @@
+% -----------------------------------------------------------------------------
+% Written by Josef Lotz; jlotz@pdx.edu
+% NEAR-Lab, Portland State University
+% November 14, 2006
+% -----------------------------------------------------------------------------
+% This is not an official PSU document, even though all efforts have been made
+% to remain in accordance to OGS requirements, http://www.gsr.pdx.edu/ogs_thesis.php
+% it is ultimately the responsibility of the student to check for mistakes.
+% -----------------------------------------------------------------------------
+% This document requires a style file named "PSUthesis.sty" and class file
+% named "PSUreport.cls"; these files were originally from Stanford University
+% and have been modified/adapted/improved by many. Thanks to all.
+% -----------------------------------------------------------------------------
+% Good luck and start early!
+
+% Modified by Saurabh Jain
+% saurabhj@cecs.pdx.edu
+% March 14 2008
+% Added multiline comments package
+% Created separated files for ease of editing and maintainance
+% Added package subfig to assist in insertion of sub-figures
+% Added package for writing algorithms.
+% Added package for making index
+%
+% -----------------------------------------------------------------------------
+
+%==============================================================================
+% Document class and package inclusions
+%==============================================================================
+\documentclass[12pt,oneside,letterpaper]{PSUreport}
+\usepackage{PSUthesis}             % See style file, you may need to make some minor changes
+\usepackage[pdftex]{graphicx}
+\usepackage{psfrag}
+% list other packages you need here
+\usepackage{subcaption}
+\usepackage{algorithmic}           % To assist in generating psuedocode     --SJ [Apr 7, 2008]
+\usepackage{amsmath}               % To handle multiple equations in one equation environment --SJ [My 13, 2008]
+\usepackage{cite}
+\usepackage{pgfplots}  % Used to produce graphs.
+\usepackage{pgfplotstable} % Used to make graphs from reading tables.
+\usepackage{pifont}
+\usepackage{bm}
+\usepackage{tikz}
+% \usepackage{draftwatermark}        % TODO: Remove in Final Draft
+
+\usepackage{hyperref}
+\usepackage[acronym,toc]{glossaries}
+
+\makenoidxglossaries
+
+% \SetWatermarkScale{2.0}            % TODO: Remove this in Final Draft
+
+
+\input{chap/00_acronyms.tex}
+
+\graphicspath{{./img/}, {./img/dlImages/}, {./img/trails/}, {./img/results/}, {./img/trailrunner/}} % Folders to pull graphics from.
+
+\usetikzlibrary{colorbrewer}
+\usetikzlibrary{positioning}
+\usetikzlibrary{calc}
+\usetikzlibrary{patterns}
+\usetikzlibrary{shapes}
+
+\usepgfplotslibrary{colorbrewer}
+
+\definecolor{cc0c0c0}{RGB}{192,192,192}
+\definecolor{cffffff}{RGB}{255,255,255}
+\definecolor{cb3b3b3}{RGB}{179,179,179}
+\definecolor{c00ffff}{RGB}{0,255,255}
+
+\title{Chemical Reaction Network Control Systems for Agent-Based Foraging Tasks}      % Title of your thesis
+\subtitle{}                 % Sub title
+                            % Keeping it empty seems to be giving the same effect --Saurabh
+\author{Joshua Stephen Moles }               % Include space after name; e.g. \author{name }
+\dept{Electrical and Computer Engineering}             % Department
+
+\principaladviser{Prof. Christof Teuscher}             % Principal advisor
+\firstreader{Prof. Marek A. Perkowski}                           % First member
+\secondreader{Prof. Eric Wan}                % Second member
+\deptchair{Prof. James McNames}                        % Dept. Chair
+\submitdate{\today}                                    % Submission date
+\submityear{2015}                                      % Just do it!
+
+\copyrightfalse                                       % Turn off copyright, set to true if... true
+\figurespagetrue                                       % Turn on figures page
+\tablespagetrue                                        % Turn on tables page
+\makeindex                                             % To create an index in the end
+
+% Used for IEEE citation stuf.
+\makeatletter
+\def\bstctlcite{\@ifnextchar[{\@bstctlcite}{\@bstctlcite[@auxout]}}
+\def\@bstctlcite[#1]#2{\@bsphack
+ \@for\@citeb:=#2\do{%
+    \edef\@citeb{\expandafter\@firstofone\@citeb}%
+    \if@filesw\immediate\write\csname #1\endcsname{\string\citation{\@citeb}}\fi}%
+ \@esphack}
+\makeatother
+
+\makeatletter
+\pgfplotsset{
+    every axis x label/.append style={
+        alias=current axis xlabel
+    },
+    legend pos/outer south/.style={
+        /pgfplots/legend style={
+            at={%
+                (%
+                \@ifundefined{pgf@sh@ns@current axis xlabel}%
+                {xticklabel cs:0.5}%
+                {current axis xlabel.south}%
+                )%
+            },
+            anchor=north
+        }
+    }
+}
+\makeatother
+
+
+
+%==============================================================================
+\begin{document}
+%==============================================================================
+\pagenumbering{gobble}
+
+
+\signaturepage
+
+%\abstract
+
+
+\newpage                                    % Don't forget to start a new page
+
+\titlepage                                  % Title Page
+
+% Check for \copyrighttrue
+\ifcopyright\ifthesiscopyright\thesiscopyrightpage\else\tradcopyrightpage\fi\fi
+
+\null\vfill
+\begin{center}
+        \large
+        \begin{figure*}[h!]
+        \centering
+        \includegraphics[width=1.5in]{by}
+        \end{figure*}
+        This work is licensed under the Creative Commons Attribution 4.0 International License. To view a copy of this license, visit \url{http://creativecommons.org/licenses/by/4.0/}.
+\end{center}
+\vfill\newpage
+
+
+% \pagestyle{plain}
+
+%\Acknowledgements
+\pagenumbering{roman}                       % Start number pages in lower roman style
+\centerline{\textbf{Abstract}}
+\input{chap/02_abstract.tex} % Example: http://www.gsr.pdx.edu/forms/sample_thesis_abstract.pdf
+\chapter*{Acknowledgements}
+\input{chap/03_acknow.tex}                     % Add acknowledgements. Optional
+
+\afterpreface                               % Macro to include TOC, list of tables & figs
+
+\printnoidxglossary[type=\acronymtype]
+
+\bstctlcite{BSTcontrol}
+
+%==============================================================================
+% Begin
+%==============================================================================
+\glsresetall
+\chapter{Introduction}
+\pagenumbering{arabic}
+\input{chap/05_intro.tex}
+
+\glsresetall
+\chapter{Background}
+\label{chap:background}
+\input{chap/07_background.tex}  
+
+\glsresetall
+\chapter{Delay Line}
+\label{chap:delay_line}
+\input{chap/15_delayline.tex}
+
+\glsresetall
+\chapter{Trail Runner and Trail Viewer}
+\label{chap:trail_runner}
+\input{chap/20_trailrunner.tex}
+
+\glsresetall
+\chapter{Non-Chemical Reaction Network Simulations}
+\label{chap:non_crn_testing}
+\input{chap/22_noncrn.tex}
+
+\glsresetall
+\chapter{Chemical Reaction Network Trail Simulations}
+\label{chap:trail_simulations}
+\input{chap/25_chemsims.tex}
+
+\glsresetall
+\chapter{Conclusion}
+\label{chap:conclusion}
+\input{chap/35_conclusion.tex}
+
+
+
+%==============================================================================
+%  Bibliography
+%==============================================================================
+
+\bibliographystyle{IEEEtran}
+\bibliography{mainDoc}                  % bibliography file name mainDoc.bib  ------Neha (2010)
+
+%==============================================================================
+%  Appendices
+%==============================================================================
+\appendix
+
+%==============================================================================
+\end{document}
+%==============================================================================

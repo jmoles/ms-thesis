@@ -1,0 +1,29 @@
+In this work, we have shown the feasibility of using \glspl{crn} as a means to implement control systems. We have demonstrated a partial solving of the Santa Fe trail in a \gls{crn}. We have also shown the ability of a \gls{crn} to partially navigate three sub-segments of the Santa Fe trail. We successfully navigate the easy Santa Fe trail easy segment consuming 100\% of the food. For the medium and hard segments and full Santa Fe trail, we are able to consume more than 44\% of the available food. This shows that it is possible to solve simpler versions of the trail without a need for \gls{ann} recurrence. Koza's genetic programs were able to consume all of the food on the Santa Fe trail. With further \gls{ga} optimization, \glspl{ann} in a \gls{crn} capable of consuming all food seems plausible.
+
+We have also designed a flexible size memory necessary to provide storage for such control systems. The integration of our \gls{mdl} with the trail system \gls{ann} and \gls{asp} demonstrate the ability to hold values over time for later consumption by another system. With the \gls{bpl} delay line, we have shown the ability to learn 11 of the 14 linearly separable functions with an accuracy of greater than 85\%. Connecting these two delay line models with other systems also demonstrates the modular nature of the delay line system. A \gls{mdl} can precisely store values at the expense of manual signaling and our \gls{bpl} can do the same for smaller length memories without the need of manual control signaling.  Our \gls{mdl} also demonstrates a model capable of storing values with less than 0.01\% error.
+
+\section{Contributions}
+This work has made the following contributions to the field:
+\begin{itemize}
+\item a new type of memory implemented in a \acrlong{crn}, \acrlong{mdl}, in Chapter~\ref{chap:delay_line};
+\item a new type of memory implemented in a \acrlong{crn}, \acrlong{bpl}, in Chapter~\ref{chap:delay_line};
+\item the first chemical model capable of learning binary time series with the combination of the delay line and \acrlong{asp}, in Chapter~\ref{chap:delay_line};
+\item a framework capable of simulating ant trail problems with user customizable parameters on \acrlong{ann} and \acrlong{ga} parameters, in Chapter~\ref{chap:trail_runner};
+\item a web based application capable of navigating, filtering, and viewing data from simulations on ant trail problems with ease, in Chapter~\ref{chap:trail_runner};
+\item a novel architecture with a single hidden perceptron for solving the ant trail problems with the addition of a delay line as a memory, in Chapter~\ref{chap:non_crn_testing};
+\item an investigation into the minimal length of delay line length of four to solve the artificial ant problem in a non-\acrlong{crn} configuration, in Chapter~\ref{chap:non_crn_testing};
+\item the first \acrlong{crn} implementation to solve the artificial ant problem, in Chapter~\ref{chap:trail_simulations};
+\item the first \acrlong{ann} implemented in a \acrlong{crn} to compare system level functionality against other work, in Chapter~\ref{chap:trail_simulations};
+\item evidence that a single hidden neuron when paired with a \acrlong{mdl} of length 4 is capable of solving 47\% of the John Muir trail, 44\% of the full Santa Fe trail, 100\% of the easy Santa Fe trail segment, 84\% of the medium Santa Fe trail segment, and 47\% of the hard Santa Fe trail segment, in Chapter~\ref{chap:trail_simulations};
+\item proof that a \acrlong{ann} without a hidden neuron when paired with a \acrlong{mdl} of length 4 is capable of solving 47\% of the John Muir trail, 57\% of the full Santa Fe trail, 45\% of the easy Santa Fe trail segment, 84\% of the medium Santa Fe trail segment, and 47\% of the hard Santa Fe trail segment, in Chapter~\ref{chap:trail_simulations}.
+\end{itemize}
+
+\section{Future Work}
+As discussed in Chapter~\ref{chap:trail_simulations}, the \gls{ga} used on \gls{crn} simulations was based off the \gls{ga} optimization performed in the non-\gls{crn} environment. Further optimization of the the \gls{ga} once the system is implemented as a \gls{crn} may yield better results for the overall system. The downside with such optimization is the long time to run simulations as discussed in Chapter~\ref{chap:trail_simulations}. As the speed to run the simulations decreases, such evaluations may be more feasible in the future. 
+
+Banda has recently introduced a new type of delay line known as the parallel-accessible delay line~\cite{Banda2014-pf}. This delay line behaves similar to the \gls{mdl}, but adds a clock signal that does not require the manual signalling of the \gls{mdl}. The use of this delay line may in some instances reduce the complexity of the \gls{crn} reaction series.
+
+
+
+
+

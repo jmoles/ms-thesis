@@ -1,0 +1,56 @@
+Chemistry as an alternative computer paradigm provides a means to perform decision making in areas that conventional  systems are unable to operate. As an example, \gls{cmos} is fairly impractical for use in a wet sytem at a biological cellular level. At present, chemistry lacks a means to represent some of the more mature models found in systems like \gls{cmos}. Many of these components are in their infancy. Chemistries also provide an interesting alternative computing means with their inherit parallelism because all reactions and changes in concentration of species occur concurrently~\cite{De_Lacy_Costello2003-yf}.
+
+Developing and demonstrating the application of some of these seemingly simple blocks are fundamental to build more complex systems. As an example, memory storage is a fundamental building block for calculation and processing~\cite{Kanopoulos1986-of}. Retrieving previous results or observations are necessary to build more complex control systems and devices. Once we have memories, it opens the door to implementing systems capable of more complicated processing. Arkin and Ross~\cite{Arkin1994-bs} emphasized the need for ``buffer'' between the phases of the Boolean logic elements they construct.
+
+Decision making ability is just as crucial as memory when building larger systems. Modeling decision making with neuron models connected together to form systems known as \gls{ann}, leads to greater system complexity. Chemistry could benefit from more models of memories, calculation blocks, and control systems to demonstrate the complex decision making capability of the medium. The demonstration of a system like we are proposing is essential to form systems capable of more complex tasks such as dynamic length memories, \glspl{fifo}, networking protocols~\cite{Meyer2011-xn}, logic circuits~\cite{Arkin1994-bs}~\cite{Matsumaru2005-ca}~\cite{Katz2012-fl}~\cite{Banda2013-zs}, arithmetic~\cite{Katz2012-wk}, signal processing~\cite{Jiang2013-gq}, or games~\cite{Stojanovic2003-eg}~\cite{Faulhammer2000-qv}. 
+
+\section{Objectives}
+This thesis is meant to perform an investigation of the use of chemistry to solve a control system problem. At present, there are few examples of implementing control systems as chemistries. The control system problem implemented is the ant trail task originally presented by Jefferson to solve the John Muir trail~\cite{Jefferson1992-ph}. 
+
+In this task a control system, represented as an ant, must navigate through a trail consuming as many pieces of food as possible with 200 moves. The food elements starts out one after another, but quickly gets more difficult as the trail continues on by adding turns and gaps. Jefferson's original work on this subject found that memory is necessary to solve this task, such as recurrence in a \gls{ann}. This requires figuring out the needed size of memory as well as what type of network best performs the actual computation.  The objective is to use artificial chemistries to represent the ant. Such a system requires the ability to store information over time and is more complex than present systems implemented a chemistry. 
+
+The first step is the chemistry implementation of a memory. Our goal is to have a minimal length memory that can accurately capture the information for later access in navigating the trail. This gives us the ability to perform random memory access as well as form more complex data structures in a chemistry environment. We will show two different models that trade off complexity for accuracy. One provides greater storage length requiring more user control. The other provides a limited storage length with less user control. This gets implemented as a type of \gls{ac} known as a \gls{crn}, which we will discuss later in the next chapter.
+
+\section{Approach}
+Our approach was to first look at the necessary elements to solve the problem. Figure~\ref{fig:approach_process} shows our process described here. Based off the work by Jefferson and Koza, we found that we required a memory and the ability to represent \glspl{ann} and perceptrons in a chemistry. Without models of memory in a chemistry, we first designed the chemical delay lines to store previous trail information. Next, an evaluation outside of the chemistry is done to determine the minimal network layout and memory size for a chemical implementation. The optimization in the non-chemical environment is an essential step due to the drastically larger simulation time when moving into a chemistry simulator. In addition, the \gls{ann} that Jefferson directly uses would require a significant amount of time to simulate so a study to simplify the system is required. Finally, taking this layout and memory, we use existing chemical perceptron models~\cite{Banda2014-kg}~\cite{Blount_undated-ro} to simulate the system in a chemical environment. 
+
+\begin{figure}
+\centering
+\begin{tikzpicture}[
+    block/.style ={rectangle, draw=black, thick, fill=Accent-4-1!20,
+          text width=10cm, text centered, rounded corners},
+    line/.style ={draw, ->}
+]
+
+\node[block] (s1) at (0,0) {Identify John Muir Trail as Control System Problem};
+\node[block, below of = s1] (s3) {Find or Develop Memory and ANN Models};
+\node[block, below of = s3] (s5) {Build Chemical Memory Model};
+\node[block, below of = s5] (s15) {Evaluate Outside of Chemistry};
+\node[block, below of = s15] (s20) {Assess Performance in Chemistry Environment};
+
+\path [line] (s1) -- (s3);
+\path [line] (s3) -- (s5);
+\path [line] (s5) -- (s15);
+\path [line] (s15) -- (s20);
+
+\end{tikzpicture}
+
+\caption[Approach Process]{Chart showing approach we took to address problem. We start by identifying the John Muir trail problem as one to approach. Then, we find or construct the blocks needed for our system. We identify existing \gls{ann} models. We do not find a chemical memory, so we develop that block. Then, determine the best performance outside of a chemistry before testing the system in an artifical chemistry environment. }
+\label{fig:approach_process}
+\end{figure}
+
+\section{Significance}
+The work presented here shows the first time data has been stored in a chemical fashion. This delay line created here is a building block to larger control systems. This is exemplified by connecting the delay line to an artificial neural network composed of chemical perceptrons~\cite{Banda2013-zs} that are capable of finding solutions to the ant trail problems. Combining the delay line with a perceptron in a system like the trail solving shows how we can modularly create more complex agent-based systems in chemistries. Fields like signal processing, networking, smart medication delivery, and harmful bacteria detection all could benefit from a chemistry-based memory. 
+
+An autonomous agent capable of making control decisions is a building block for larger, more complex systems~\cite{Scheidt2002-bb}. Demonstration of the delay line in combination with a system like the trail problem allows problems that were once unsolvable in a chemistry are now implementable. In addition, the construction of the delay line independently of the construction of the perceptron shows how the blocks are added or removed to build a more complex system.
+
+Others have implemented systems in \glspl{crn} that act similar to a buffer or memory. Jiang et al. introduced the concept of a delay element~\cite{Jiang2013-gq}. The delay element is primarily used as a storage area for holding data in between each computation cycle. The data then returns and is examined in computing during the next iteration of the calculation. Jiang's buffer is primarily a signal processing application looking only at the previous value. Our delay line has the ability to delay not only multiple steps in time, but also allows access to any of the past values besides the most recent. We could create a FIFO~\cite{Kanopoulos1986-of} out of the delay line by removing the intermediate stages and providing only the final output.
+
+Other areas, such as networking, use chemical reaction networks as a mechanism to control scheduling and queuing of packets~\cite{Meyer2011-xn}. The work discusses a methodology to use the law of mass action as a means to schedule packets. With a buffer like the one we are describing, the Meyer's systems could also be extended to actually implement a means to queue packets in a chemical system. This system would reduce cost and complexity by having a single implementation medium. The available of a memory in chemistry would be helpful to address several potential applications.
+
+One such example in the field of biomedicine is smart medication~\cite{Neat1988-zv} \cite{Abbod2002-pt} \cite{Halamek2010-lk} \cite{Wang2010-se} \cite{Zhou2012-jf}. Rather than have a fixed dosage of a specific type of medicine, a patient could be observed over a time window and then adapt the drug (in quantity or species) to best respond to their needs~\cite{Mailloux2014-ux}~\cite{Mailloux2014-de}. Another use in the biochemistry field would be the detection of harmful species, e.g., chemicals produced by cancer cells in a host. With a time delay line, the detection would not be limited to a simple yes or no, but can get extended to measure a chemical concentration as well as capture at what point the event occurred. Combination of the delay line with a control system, like the ant trail, demonstrates a system reacting from these inputs.
+
+The biomedical examples are not just limited to cancer or diabetes. There are numerous other types of detection that could benefit compared to the traditional methods that either require long periods of time or handling of potentially dangerous samples. Another example is a modern \textit{Salmonella} detection system still requires the analysis of samples overnight~\cite{Alvarez2004-ix}. An OR-like perceptron connected to a delay line system in a \gls{crn} could detect and react to the presence of \textit{Salmonella} immediately. Another is the ability to monitor blood sugar levels over time with a closed-feedback system monitoring the patient and adjust the dosage of delivered insulin~\cite{Wang2010-se}.
+
+\section{Structure}
+This work is divided into~\ref*{chap:conclusion} chapters. In chapter~\ref{chap:background}, we provide a background of \glspl{crn}, \gls{ann}, the trail problems, and previous work related to this thesis. Next, chapter~\ref{chap:delay_line} discusses the implementation and results of the two models of delay line designed for this task. Then, chapter~\ref{chap:trail_runner} covers the \gls{ann} solver applications written to test the trail problems in a non-\gls{crn} environment. We then use the \gls{ann} applications to find the optimal length delay line in Chapter~\ref{chap:non_crn_testing}. Chapter~\ref{chap:trail_simulations} goes over the combination of a \gls{crn} delay line and perceptron and presents those results. The paper wraps up with some concluding remarks in Chapter~\ref{chap:conclusion}.
