@@ -3,7 +3,7 @@ In this work, we have shown the feasibility of using \glspl{crn} as a means to i
 We have also designed a flexible size memory necessary to provide storage for such control systems. The integration of our \gls{mdl} with the trail system \gls{ann} and \gls{asp} demonstrate the ability to hold values over time for later consumption by another system. With the \gls{bpl} delay line, we have shown the ability to learn 11 of the 14 linearly separable functions with an accuracy of greater than 85\%. Connecting these two delay line models with other systems also demonstrates the modular nature of the delay line system. A \gls{mdl} can precisely store values at the expense of manual signaling and our \gls{bpl} can do the same for smaller length memories without the need of manual control signaling.  Our \gls{mdl} also demonstrates a model capable of storing values with less than 0.01\% error.
 
 \section{Contributions}
-This work has made the following contributions to the field:
+This work has made the following contributions to the field, ordered by appearance in this work:
 \begin{itemize}
 \item a new type of memory implemented in a \acrlong{crn}, \acrlong{mdl}, in Chapter~\ref{chap:delay_line};
 \item a new type of memory implemented in a \acrlong{crn}, \acrlong{bpl}, in Chapter~\ref{chap:delay_line};
@@ -21,7 +21,11 @@ This work has made the following contributions to the field:
 \section{Future Work}
 As discussed in Chapter~\ref{chap:trail_simulations}, the \gls{ga} used on \gls{crn} simulations was based off the \gls{ga} optimization performed in the non-\gls{crn} environment. Further optimization of the the \gls{ga} once the system is implemented as a \gls{crn} may yield better results for the overall system. The downside with such optimization is the long time to run simulations as discussed in Chapter~\ref{chap:trail_simulations}. As the speed to run the simulations decreases, such evaluations may be more feasible in the future. 
 
-Banda has recently introduced a new type of delay line known as the parallel-accessible delay line~\cite{Banda2014-pf}. This delay line behaves similar to the \gls{mdl}, but adds a clock signal that does not require the manual signalling of the \gls{mdl}. The use of this delay line may in some instances reduce the complexity of the \gls{crn} reaction series.
+Banda has recently introduced a new type of delay line known as the parallel-accessible delay line~\cite{Banda2014-pf}. This delay line behaves similar to the \gls{mdl}, but adds a clock signal that does not require the manual signaling of the \gls{mdl}. The use of this delay line may in some instances reduce the complexity of the \gls{crn} reaction series.
+
+We also believe that an implementation as a wet chemistry is a good next step. The current technology may limit a full implementation, but starting with a smaller system like the \gls{mdl}, \gls{bpl}, or the preceptron models presented by Banda \textit{et al.}~\cite{Banda2013-zs}~\cite{Banda2014-bp}~\cite{Banda2014-kg}, would provide a first step towards a full wet chemistry realization.
+
+Further work could also look at other areas of using the delay line to build more complex systems for interesting applications. As an example, one could pair the delay line with a chemical system acting as XOR to build a \gls{lfsr}. Development of a \gls{lfsr} would lead to the ability to perform random number generation~\cite{Chu1999-ms} in a \gls{crn}.
 
 
 

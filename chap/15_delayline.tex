@@ -399,7 +399,7 @@ The reaction set of the delay line also scales in a straightforward fashion. Eac
 
 \section{Results}
 \label{sec:dl_results}
-We will highlight the results for the two stage buffer and its extension beyond two stages. We employed Genetic Algorithms (GAs)~\cite{Mitchell1998-tw} to optimize the rate constants (mapped to chromosomes) of the backwards propagation model. We only used the algorithm to optimize the backwards propagation model since the manual copy was straightforward to optimize by hand. The GA used an elite selection of the top 20 chromosomes from the population of 100, which undergo cross-over and mutation to form the next generation. The goal (fitness function) of this evolutionary algorithm was to minimize the error of the delay line.
+We will highlight the results for the two stage buffer and its extension beyond two stages. We employed \glspl{ga}~\cite{Mitchell1998-tw} to optimize the rate constants (mapped to chromosomes) of the backwards propagation model. We only used the algorithm to optimize the backwards propagation model since the manual copy was straightforward to optimize by hand. The GA used an elite selection of the top 20 chromosomes from the population of 100, which undergo cross-over and mutation to form the next generation. The goal (fitness function) of this evolutionary algorithm was to minimize the error of the delay line.
 
 We defined error as the difference between the actual input value ($X$) and the value occurring at $X1$ on this cycle and then $X2$ on the next cycle. We performed this test 50 time steps after $X$ is injected into the delay line. Equation~\ref{eq:errorequation} shows the calculation of this error where $X[n]$ represents the current value of $X$ and $X[n-1]$ represents the value of $X$ on the previous input cycle. Adding both differences for the two stage delay line provided the overall error.
 
@@ -440,17 +440,17 @@ For a different size, the back propagation delay line has different rate constan
     \end{tabular}
 \end{table}
 
-To compare the accumulated error of the two delay lines we used symmetric mean absolute percentage error (SAMP) defined as
+To compare the accumulated error of the two delay lines we used \gls{smape} defined as
 \begin{equation}
-SAMP = 100 * \langle \frac{|y-\hat{y}|}{y+\hat{y}} \rangle,
+SMAPE = 100 * \langle \frac{|y-\hat{y}|}{y+\hat{y}} \rangle,
 \end{equation}
-where $\langle.\rangle$ is the mean of a set of multiple values, $y$ is the actual value, and $\hat{y}$ is the expected value. We calculated an average SAMP per stage (unit size) by dividing cumulative SAMP with $m$. More specifically, using $n$ to represent a discrete time series sample and $m$ to represent the number of stages:
+where $\langle.\rangle$ is the mean of a set of multiple values, $y$ is the actual value, and $\hat{y}$ is the expected value. We calculated an average \gls{smape} per stage (unit size) by dividing cumulative \gls{smape} with $m$. More specifically, using $n$ to represent a discrete time series sample and $m$ to represent the number of stages:
 \begin{equation}
-SAMP = \frac{100}{m} * \sum \limits_{k=1}^{m} \langle \frac{|Xk-X[n-(k-1)]|}{Xk+X[n-(k-1)]} \rangle.
+SMAPE = \frac{100}{m} * \sum \limits_{k=1}^{m} \langle \frac{|Xk-X[n-(k-1)]|}{Xk+X[n-(k-1)]} \rangle.
 \end{equation}
-For instance, SAMP for two stages ($m=2$) is given by
+For instance, \gls{smape} for two stages ($m=2$) is given by
 \begin{equation}
-SAMP = \frac{100}{2} * \langle \frac{|X1-X[n]|}{X1+X[n]} + \frac{|X2-X[n-1]|}{X2+X[n-1]} \rangle \label{eq:sampn2}.
+SMAPE = \frac{100}{2} * \langle \frac{|X1-X[n]|}{X1+X[n]} + \frac{|X2-X[n-1]|}{X2+X[n-1]} \rangle \label{eq:sampn2}.
 \end{equation}
 
 We evaluated performance (error) over 10,000 runs, each repeating the sequence of actions defined in Table~\ref{tab:as2Man} and Table~\ref{tab:as2} for 200 iterations (200,000 time steps). Figure~\ref{fig:fiveStageAbsDiff} shows the results for a delay line of size two as well as for larger sizes (discussed in next section). The difference in values from expected values for the two stage delay line are quite small. This shows that for a two stage delay line, both types operate well. One thing to note is that the backwards delay line has a larger initial error which can accumulate over time.
@@ -475,7 +475,7 @@ In this section, we will examine the use of a delay line with five stages. Five 
 		ymode=log,
 		axis x line=bottom,
 		axis y line=left,
-		width=13cm,
+		width=12.75cm,
 		height=7.313cm,
 		mark repeat=20,
 		]
@@ -490,13 +490,13 @@ In this section, we will examine the use of a delay line with five stages. Five 
 			\legend{M2, M5, M10, B2, B3, B4, B5}
         \end{axis}
 	\end{tikzpicture}
-	\caption[Error for Both Delay Lines]{SAMP calculated for delay lines. M$m$ and B$m$ are the $m^{th}$ stage of manual copying and back propagation delay line.}
+	\caption[Error for Both Delay Lines]{\Gls{smape} calculated for delay lines. M$m$ and B$m$ are the $m^{th}$ stage of manual copying and back propagation delay line.}
 	\label{fig:fiveStageAbsDiff}
 \end{figure}
 
 \begin{table}[ht]
 	\centering
-	\caption[Error for Both Delay Lines]{Maximum and average SAMP obtained through performance runs of 200 iterations and varying configurations of stages and manual copy and backwards propagation. Maximum and average excludes the initial values where the delay line is filling (first $m$ points with low SAMP).}
+	\caption[Error for Both Delay Lines]{Maximum and average \gls{smape} obtained through performance runs of 200 iterations and varying configurations of stages and manual copy and backwards propagation. Maximum and average excludes the initial values where the delay line is filling (first $m$ points with low SAMP).}
 	\label{tab:maxSAMP}
 	\begin{tabular}{llllll}
 	Backwards DL & Max     & Average & Manual DL & Max      & Average  \\ \hline
@@ -552,7 +552,7 @@ To demonstrate the capabilities of the delay line to fit into other designs, we 
 	\label{fig:perceptintegrate}
 \end{figure}
 
-We trained the perceptron using reinforcement learning on 14 linearly separable binary function. Figure~\ref{fig:perceptLearning} shows the results of this learning. The binary time series perceptron learns 11 of the 14 functions with an accuracy of greater than 85\%. Figure~\ref{fig:ORPerceptResults} shows the buffer and perceptron accurately producing the output for OR.
+We trained the perceptron using reinforcement learning on 14 linearly separable binary functions. Figure~\ref{fig:perceptLearning} shows the results of this learning. The binary time series perceptron learns 11 of the 14 functions with an accuracy of greater than 85\%. Figure~\ref{fig:ORPerceptResults} shows the buffer and perceptron accurately producing the output for OR.
 
 \begin{figure}[ht]
 	\centering
@@ -639,24 +639,13 @@ We trained the perceptron using reinforcement learning on 14 linearly separable 
 	\label{fig:ORPerceptResults}
 \end{figure}
 
-NAND, IMPL, and NOTX1 are all heavily dependent on the last input to resolve in the time delay line, $X1$. The input species $X1$ is not provided to the system until typically 50 time steps later than value $X2$. The original model of the perceptron was optimized for instantaneous and simultaneous injection of both inputs. Because input $X1$ is not ready, the performance is lower because that input plays a larger role on the correct performance for these logic functions. This makes the system capable of obtaining an average success rate of approximately 90\% compared to the perceptron's 99\% success rate~\cite{Banda2014-bp}.
-
-\section{Deoxyribozyme Cascading Implementation}
-\label{sec:deoxy}
-Now, we would like to present how such a delay line could be realized in a system employing deoxyribozyme catalysis~\cite{Stojanovic2003-eg}~\cite{Stojanovic2000-qx}~\cite{Liu2009-jz}. Figure~\ref{fig:deoxy1} shows an example of a two stage manual delay line with the signals being the deoxyribozymes $X1_{signal}$ and $X2_{signal}$ which cleave the substrate $X$ at the embedded ribonucleotide. This produces $X1$ ready for the next system to consume. Subsequently, $X1C$ embedded with another ribonucleotide is able to get cleaved by deoxyribozyme $X2_{signal}$ to form the next input to the system, $X2$.
-
-\begin{figure}[ht]
-	\centering
-	\includegraphics[width=12cm]{cleavage}
-	\caption[Example of Deoxyribozyme Implementation]{Deoxyribozyme cascading example. Deoxyribozyme $X1_{signal}$ cleaves $X$ at embedded ribonucleotide ($rA$) to form $X1$ and $X1C$. A similar process occurs on $X1C$ to produce $X2$ and $X2C$.}
-	\label{fig:deoxy1}
-\end{figure}
+NAND, IMPL, and NOTX1 are all heavily dependent on the last input to resolve in the time delay line, $X1$. In this case, the input species $X1$ is not provided to the system until typically 50 time steps later than value $X2$. The original model of the perceptron was optimized for instantaneous and simultaneous injection of both inputs. Because input $X1$ is not ready, the performance is lower because that input plays a larger role on the correct performance for these logic functions. This makes the system capable of obtaining an average success rate of approximately 90\% compared to the perceptron's 99\% success rate~\cite{Banda2014-bp}.
 
 \section{Discussion}
 We have presented a novel implementation of a delay line as a chemical reaction network capable of storing past concentrations. By arranging our delay lines in a SIMD-like layout, we could delay multiple segments of data simultaneously with a shared control signal for either model of delay line. We have introduced two types of a chemical delay line: manual copy delay line and backwards propagation delay line. A manual copy delay line can precisely carry values in a delayed state, but requires more intervention from the user (growing at a rate of $m$) to propagate values through the system. The second model, backwards propagating delay line, automatically moves values through the system with a single signaling injection with reasonable accuracy.
 
-The integration of the backwards propagating delay line with the threshold asymmetric signal perceptron resulted in the first chemical model capable of learning binary time series. Also, this example is a proof-of-concept that our delay line is a modular block ready for use in other systems. For systems requiring a smaller window of past values, either model of the delay line gives sufficient accuracy for data storage. The manual copy delay line shows potential for longer chains with the amount of calculated SAMP passed between phases remaining below 0.01\% for a delay line of 10 stages. The backwards propagating delay line provides a much simpler user interface at the sacrifice of accuracy. A backwards propagation of five stages keeps the calculated SAMP below 15\%. Systems requiring a large number of delays will have to weigh accuracy and simplicity to make a selection for a particular implementation.
+The integration of the backwards propagating delay line with the threshold asymmetric signal perceptron resulted in the first chemical model capable of learning binary time series. Also, this example is a proof-of-concept that our delay line is a modular block ready for use in other systems. For systems requiring a smaller window of past values, either model of the delay line gives sufficient accuracy for data storage. The manual copy delay line shows potential for longer chains with the amount of calculated \gls{smape} passed between phases remaining below 0.01\% for a delay line of 10 stages. The backwards propagating delay line provides a much simpler user interface at the sacrifice of accuracy. A backwards propagation of five stages keeps the calculated \gls{smape} below 15\%. Systems requiring a large number of delays will have to weigh accuracy and simplicity to make a selection for a particular implementation.
 
-The \gls{bpl} and \gls{mdl} tied with a \gls{asp} demonstrate how these two systems can modularly connect to other elements in a \gls{crn} to form a memory. Now that there are the building blocks to provide data storage in a \gls{crn}, we discuss the work to find the optimal size of memory and layout of \gls{ann} to solve the ant trail task when paired with a delay line.
+The \gls{bpl} and \gls{mdl} tied with a \gls{asp} demonstrate how these two systems can modularly connect to other elements in a \gls{crn} to form a memory. This connection of our delay line model shows how the delay line can modularly connect to an independently developed component, like an \gls{asp}, to solve larger problems. Using Blount's compartments~\cite{Blount_undated-ro} as an XOR \gls{ann} combined with a model of our delay line would allow for the development of a block like a \gls{lfsr}. Now that we have the building blocks to provide data storage in a \gls{crn}, we discuss the work to find the optimal size of memory and layout of \gls{ann} to solve the ant trail task when paired with a delay line.
 
 

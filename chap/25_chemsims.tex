@@ -3,13 +3,9 @@ In this chapter, we discuss how we integrated the delay line with an \gls{ann} t
 This chapter starts out by discussing the methodology we used to gather the data, presents the results, and then provides a discussion on the data presented.
 
 \section{Methodology}
-After finding the minimal length of delay line in the non-\gls{crn} simulations, we moved with this length of $N=4$ into the \gls{crn} simulations. We performed these simulations represented in a \gls{crn} with \gls{coel}~\cite{Banda2014-qw}. Each trail and \gls{ann} was evaluated 10 or more times in \gls{coel}. The \gls{crn} \gls{ann} was constructed with a network similar to the one in Figure~\ref{fig:trail_ann_w_dl2} with a couple of exceptions. Figure~\ref{fig:chem_trail_ann_dl4} shows an example of this modified neural network for the chemistry simulations. The node model we use in the \gls{crn} does not require the inverted input so there is a single input node for each delay line stage. This means the total number of nodes in the \gls{crn} is shown Equation~\ref{eq:node_count_crn_eq_crn}.
+After finding the minimal length of delay line in the non-\gls{crn} simulations, we moved with this length of $N=4$ into the \gls{crn} simulations. We performed these simulations represented in a \gls{crn} with \gls{coel}~\cite{Banda2014-qw}. Each trail and \gls{ann} was evaluated 10 or more times in \gls{coel}. The \gls{crn} \gls{ann} was constructed with a network similar to the one in Figure~\ref{fig:trail_ann_w_dl2} with a few differences. 
 
-\begin{equation} \label{eq:node_count_crn_eq_crn}
-n = delay\:line\:length + 4
-\end{equation}
-
-The second exception is the presence of a hidden perceptron. We wanted to evaluate performance to see if the hidden perceptron was necessary in the \gls{ann} in Figure~\ref{fig:trail_ann_w_dl2}. We evaluated performance both with the presence of a hidden layer (a single perceptron) and without a hidden layer completely.
+Figure~\ref{fig:chem_trail_ann_dl4} shows an example of this modified neural network for the chemistry simulations. The node model we use in the \gls{crn} does not require the inverted input so there is a single input node for each delay line stage. Another exception is the presence of a hidden perceptron. We wanted to evaluate performance to see if the hidden perceptron was necessary in the \gls{ann} in Figure~\ref{fig:trail_ann_w_dl2}. We evaluated performance both with the presence of a hidden layer (a single perceptron) and without a hidden layer completely.
 
 \begin{figure}
 \centering
@@ -94,10 +90,115 @@ The second exception is the presence of a hidden perceptron. We wanted to evalua
 \label{fig:chem_trail_ann_dl4}
 \end{figure}
 
-The perceptrons were modeled with Banda's \gls{aasp}~\cite{Banda2014-kg} and the \gls{ann} in a chemistry was modeled after Blout's compartmental chemistries~\cite{Blount_undated-ro}. Using these two systems allowed us to construct a network that is comparable to the one in Figure~\ref{fig:trail_ann_w_dl2} that is comparable to the current state of the art in a \gls{crn}. We chose to represent the delay line in a \gls{crn} with a \gls{mdl}. We did not simulate the system with a \gls{bpl} because the average error for a \gls{bpl} of over two stages is significant compared to a \gls{mdl} of the delay length (see Section~\ref{sec:dl_paper_over_two_stages}). The additional complication of having to manually signal copy between stages of the \gls{mdl} was not a concern for our testing. We were not constrained with the number of inputs and outputs we can have, like other chemical systems.
+The perceptrons were modeled with Banda's \gls{aasp}~\cite{Banda2014-kg} and the \gls{ann} in a chemistry was modeled after Blout's compartmental chemistries~\cite{Blount_undated-ro}. Using these two systems allowed us to construct a network that is comparable to the one in Figure~\ref{fig:trail_ann_w_dl2} and the current state of the art in a \gls{crn}. Further simplification from Figure~\ref{fig:trail_ann_w_dl2} is possible because there is a single connection from the delay line to the input layer, so we remove the formal perceptron layer and have the delay line itself act as the input layer as shown in Figure~\ref{fig:chem_comp_dl4}. Each of the nodes in this diagram are represented with a four or five input \gls{aasp}. Table~\ref{tab:aasp_react} shows the reactions and rate constants of the \gls{aasp} used to model these perceptrons. The \gls{mdl} reactions and rates are extended as discussed in Chapter~\ref{chap:delay_line} and are shown earlier in Table~\ref{tab:rateconstantsMan}. With the modified input layer, this means the total number of nodes in the \gls{crn} \gls{ann} is four with a hidden neuron and three without a hidden neuron.
+
+\begin{figure}
+\centering
+\begin{tikzpicture}[->,draw=black!100, node distance=\layerseptikznn]
+    % Based off code form http://www.texample.net/tikz/examples/neural-network/
+    \tikzstyle{every pin edge}=[<-,shorten <=1pt]
+    \tikzstyle{neuron}=[circle,draw=black!50,fill=white!25,minimum size=25pt,inner sep=0pt]
+    \tikzstyle{input neuron}=[neuron, draw=black!50, fill=Accent-5-1];
+    \tikzstyle{output neuron}=[neuron, draw=black!50, fill=Accent-5-3];
+    \tikzstyle{blank neuron}=[neuron, draw=white!50, fill=white!50];
+    \tikzstyle{hidden neuron}=[neuron, draw=black!50, fill=Accent-5-2];
+    \tikzstyle{annot} = [text width=4em, text centered]
+    \tikzstyle{dlbox}=[rectangle,draw=black!50,fill=Accent-5-4];
+    \tikzstyle{input value}=[circle,draw=black!50,fill=Accent-5-5!50,minimum size=25pt,inner sep=0pt];
+    
+    % Draw the delay line
+    
+    \node[input value] (X) at (-\layerseptikznn,-2) {X};
+    \node[dlbox] (I-1) at (0, -2) {X[0]};
+    \node[dlbox] (I-2) at (0, -4) {X[-1]};
+    \node[dlbox] (I-3) at (0, -6) {X[-2]};
+    \node[dlbox] (I-4) at (0, -8) {X[-3]};
+    \node[scale=0.2]	(syr1) [above right=-0.1cm of X] {\syringePDFImage};
+    
+    % Connect the delay line to itself.
+    \draw[->, draw=black!100] (X) edge (I-1);
+    \draw[->, draw=black!100] (I-1) edge (I-2);
+    \draw[->, draw=black!100] (I-2) edge (I-3);
+    \draw[->, draw=black!100] (I-3) edge (I-4);
+            
+    
+    % Draw the hidden layer nodes
+        \path[yshift=0.5cm]
+            node[hidden neuron] (H-1) at (\layerseptikznn, -5.5) {AASP4};
+
+    % Draw the output layer node
+        \path node[output neuron, pin={[pin edge={->}]right:Forward}] 
+                (O-2) at (\layerseptikznn * 2, -2) {AASP5};
+        \path node[output neuron, pin={[pin edge={->}]right:Left}] 
+                (O-3) at (\layerseptikznn * 2, -4) {AASP5};
+        \path node[output neuron, pin={[pin edge={->}]right:Right}] 
+                (O-4) at (\layerseptikznn * 2, -6) {AASP5};
+        \path node[blank neuron] 
+                (O-5) at (\layerseptikznn * 2, -8) {};
+
+    % Connect every node in the input layer with every node in the
+    % hidden layer.
+    \foreach \source in {1,...,4}
+            \path (I-\source) edge (H-1);
+            
+    \draw[-, draw=violet!100, thick](I-1) -- ($ (I-1) !.6! (O-2) $);
+    \draw[-, draw=violet!100, thick](I-2) -- ($ (I-2) !.6! (O-3) $);
+    \draw[-, draw=violet!100, thick](I-3) -- ($ (I-3) !.6! (O-4) $);
+    \draw[-, draw=violet!100, thick](I-4) -- ($ (I-4) !.6! (O-5) $);
+            
+    \foreach \dest in {2,...,4}{
+        \draw[->, draw=violet!100] ($ (I-1) !.6! (O-2) $) -- (O-\dest.west);
+        \draw[->, draw=violet!100] ($ (I-2) !.6! (O-3) $) -- (O-\dest.west);
+        \draw[->, draw=violet!100] ($ (I-3) !.6! (O-4) $) -- (O-\dest.west);
+        \draw[->, draw=violet!100] ($ (I-4) !.6! (O-5) $) -- (O-\dest.west);
+    }
+
+    % Connect every node in the hidden layer with the output layer
+    \foreach \dest in {2,...,4}
+        \path (H-1) edge (O-\dest);
+
+    % Annotate the layers
+    \node[annot,above of=I-1, node distance=2cm] (mdla) {MDL4 (Input)};
+    \node[annot,right of=mdla] (hla) {Hidden Layer};
+    \node[annot,right of=hla] {Output layer};
+\end{tikzpicture}
+\caption[Chemical Implementation with AASP]{This figure shows the actual model of the neural network simulated in a chemistry. The evolved parameters were the weights indicated by each individual between nodes. The AASP4 and AASP5 are the Banda's \gls{aasp} and the left input column of $X[n]$ boxes represent the length 4 \gls{mdl}. The syringe on $X$ is the input to the system. Compared to Figure~\ref{fig:chem_trail_ann_dl4}, the single connection between the delay line and input layer allows us to directly connect to the two in our \gls{crn}.}
+\label{fig:chem_comp_dl4}
+\end{figure}
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{lcc||lcc}
+\textbf{Reaction}                                 & \textbf{Rate} & $\boldsymbol{K_{m}}$ & \textbf{Reaction}                                       & \textbf{Rate} & $\boldsymbol{K_{m}}$\\ \hline
+$S_{in} + Y \rightarrow$                          & 0.1800        & (None)               & $X_3 + Y \rightarrow$                                   & 0.3905        & (None) \\
+$S_{in} \xrightarrow{W_0} S_{in}Y + Y$            & 2.5336        & 0.5521               & $X_3 \xrightarrow{W_3} X_3Y + Y$                        & 0.1227        & 0.4358 \\
+$X_{1} + Y \rightarrow$                           & 0.3905        & (None)               & $W^{\ominus} \xrightarrow{X_3Y} W_3^{\ominus}$          & 1.6788        & 0.1889 \\
+$X_{1} \xrightarrow{W_1} X_{1}Y + Y$              & 0.1227        & 0.4358               & $W_3 + W_3^{\ominus} \rightarrow$                       & 0.2416        & (None) \\
+$X_{2} + Y \rightarrow$                           & 0.3905        & (None)               & $W^{\oplus} \xrightarrow{X_3Y} W_3$                     & 5.0000        & 0.2744 \\
+$X_{2} \xrightarrow{W_2} X_{2}Y + Y$              & 0.1227        & 0.4358               & $X_4 + Y \rightarrow$                                   & 0.3905        & (None) \\
+$T \xrightarrow{S_L} E^{\oplus}$                  & 1.9613        & 0.1155               & $X_4 \xrightarrow{W_4} X_4Y + Y$                        & 0.1227        & 0.4358 \\
+$Y \xrightarrow{S_L} E^{\ominus}$                 & 1.9613        & 0.1155               & $W^{\ominus} \xrightarrow{X_4Y} W_4^{\ominus}$          & 1.6788        & 0.1889 \\
+$T + Y \rightarrow$                               & 5.0000        & (None)               & $W_4 + W_4^{\ominus} \rightarrow$                       & 0.2416        & (None) \\
+$W^{\ominus} \xrightarrow{S_{in}Y} W_0^{\ominus}$ & 1.6697        & 0.6000               & $W^{\oplus} \xrightarrow{X_4Y} W_4$                     & 5.0000        & 0.2744 \\
+$W_0 + W_0^{\ominus} \rightarrow$                 & 0.2642        & (None)               & $X_5 + Y \rightarrow$                                   & 0.3905        & (None) \\
+$W^{\oplus} \xrightarrow{S_{in}Y} W_0$            & 2.9078        & 0.5023               & $X_5 \xrightarrow{W_5} X_5Y + Y$                        & 0.1227        & 0.4358 \\
+$W^{\ominus} \xrightarrow{X_{1}Y} W_1^{\ominus}$  & 1.6788        & 0.1889               & $W^{\ominus} \xrightarrow{X_5Y} W_5^{\ominus}$          & 1.6788        & 0.1889 \\
+$W_1 + W_1^{\ominus} \rightarrow$                 & 0.2416        & (None)               & $W_5 + W_5^{\ominus} \rightarrow$                       & 0.2416        & (None) \\
+$W^{\oplus} \xrightarrow{X_{1}Y} W_1$             & 5.0000        & 0.2744               & $W^{\oplus} \xrightarrow{X_5Y} W_5$                     & 5.0000        & 0.2744 \\
+$W^{\ominus} \xrightarrow{X_{2}Y} W_2^{\ominus}$  & 1.6788        & 0.1889               & $B \xrightarrow{E^{\oplus}} E^{\oplus} + W^{\oplus}$    & 1.0000        & 1.0000 \\
+$W_2 + W_2^{\ominus} \rightarrow$                 & 0.2416        & (None)               & $B \xrightarrow{E^{\ominus}} E^{\ominus} + W^{\ominus}$ & 1.0000        & 1.0000 \\
+$W^{\oplus} \xrightarrow{X_{2}Y} W_2$             & 5.0000        & 0.2744               & $E^{\ominus} + E^{\oplus} \rightarrow$                  & 5.0000        & (None) \\
+$Y \xrightarrow{S_F} F$                           & 0.1000        & 3.0000               & ~                                                       & ~             & ~
+\end{tabular}
+\caption[AASP Reaction Set]{This table shows the reactions and rate constants for the \gls{aasp}. The ``Rate'' column shows the forward reaction rate and ``$K_m$'' shows the catalyst rate. The catalyst is the species shown above the arrow. This table shows an \gls{aasp} with five inputs. Removing the reactions containing $W_5$ and $X_5$ make this a four input \gls{aasp}. Notice how each input ($X_n$) is ``weighed'' like a classical perceptron through varying concentrations of weights ($W_n$). Each $W_n$ is the concentration that was set to a random starting value and then varied during the \gls{ga} process in the \gls{crn}. These reactions are based off work from Banda and Teuscher~\cite{Banda2014-pf}.}
+\label{tab:aasp_react}
+\end{table}
+
+We chose to represent the delay line in a \gls{crn} with a \gls{mdl}. We did not simulate the system with a \gls{bpl} because the average error for a \gls{bpl} of over two stages is significant compared to a \gls{mdl} of the delay length (see Section~\ref{sec:dl_paper_over_two_stages}). The additional complication of having to manually signal copy between stages of the \gls{mdl} was not a concern for our testing. We were not constrained with the number of inputs and outputs we can have, like other chemical systems.
 
 After finding the best set of \gls{crn} \gls{ann} structures, we wanted to find if the resulting \gls{ann} for that particular trail is specialized or is a generalized solution to these types of tasks. We take the best individual from each trail and then evaluate it on the three other trails as well as Jefferson's John Muir trail (see Figure~\ref{fig:johnmuirtrailimage}) and measure the food consumed. As an example, for the easy trail, we take that individual and run it on the medium, hard, full Santa Fe trail, and full John Muir trail to compare the results. The John Muir trail was limited to 200 moves to match Jefferson's evaluations on the trail where he successfully evolved an \gls{ann} that consumed 89 pieces~\cite{Jefferson1992-ph}.
 
+\clearpage
 \section{Results}
 In the previous chapter, we arrived at the conclusion that a delay line of length $N=4$ is sufficient for this task. We mention that the segments were used because they ran faster than the full Santa Fe trail. Figure~\ref{fig:coel_time_benchmark} show the run time for a selected run for all three segments and then run time for the full Santa Fe trail in a \gls{crn} with a \gls{mdl} of length $N=4$. 
 
@@ -242,7 +343,7 @@ Now, presenting a delay line length of $N=4$ in a \gls{crn}. We executed tests b
     
     \end{axis}
 \end{tikzpicture}
-\caption[Maximum Normalized Food Results with CRN]{Plot showing the normalized maximum food consumed for each trail and each \gls{ann} configuration on the Santa Fe trail. The maximum food obtained for each trail seems meet or exceed the performance of that with a hidden layer with the excpetion of the easy trail.}
+\caption[Maximum Normalized Food Results with CRN]{Plot showing the normalized maximum food consumed for each trail and each \gls{ann} configuration on the Santa Fe trail. The maximum food obtained for each trail seems meet or exceed the performance of that with a hidden layer with the exception of the easy trail.}
 \label{fig:crn_results_max_dl4_hl1}
 \end{figure}
 
@@ -433,7 +534,7 @@ Figure~\ref{fig:crn_results_max_percent_error} and Figure~\ref{fig:crn_results_f
     
     \end{axis}
 \end{tikzpicture}
-\caption[CRN Percent Error Against Non-CRN]{Plot showing the percent error from the maximum performance of the non-\gls{crn}. On the segments, the \gls{crn} version with a hidden layer seems to beat or perform at the same level as the version without a hidden layer. For the full trail, it seems that the hidden layer does not provide an addvantage.}
+\caption[CRN Percent Error Against Non-CRN]{Plot showing the percent error from the maximum performance of the non-\gls{crn}. On the segments, the \gls{crn} version with a hidden layer seems to beat or perform at the same level as the version without a hidden layer. For the full trail, it seems that the hidden layer does not provide an advantage.}
 \label{fig:crn_results_from_noncrn_percent_error}
 \end{figure}
 
@@ -785,14 +886,14 @@ Next, we show the percent error for the non-\gls{crn} and both \gls{crn} models 
 
 Looking at Figure~\ref{fig:crn_results_from_noncrn_percent_error} and Table~\ref{tab:santa_fe_summary_table}, it seems that for the \gls{crn} with a hidden neuron, we achieve a percent error of 50\% or less for all of the trails. Excluding the hard and full trail, the \gls{crn} with a hidden neuron is able to navigate the trail with less than 10\% error. For the \gls{crn} \gls{ann} without a hidden neuron, the percent error is less than 60\% across all trails.  At least for the easy trail, where probability of randomly finding food seems less at play, we can conclude that our \gls{crn} with a hidden neuron in the \gls{ann} has solved a simpler version of this problem. Now, we will examine performance for the best network on other trails.
 
-Figure~\ref{fig:trail_comparison_crn1} shows the performance of taking the best individual from each \gls{ann} and trail evaluation and grading performance on the other trails. Looking at the results with a hidden neuron first, it seems that the strategies evolved are rather specific to each of the trails. The top performer for each group is the individual who was evolved on the trail, with the exception of the full trail. In the full trail, the individual evolved for this trail actually consumes a greater percentage of the trail. This is likely due to the decreased area of the trail: 16x16 in the easy trail versus 32x32 in the full trail. The smaller area means that an agent can wrap around the edge of the trail with fewer moves thus consuming more food in the limited number of moves.
+Figure~\ref{fig:trail_comparison_crn1} shows the performance of taking the best individual from each \gls{ann} and trail evaluation and grading performance on the other trails. Looking at the results with a hidden neuron first, it seems that the strategies evolved are rather specific to each of the trails. The top performer for each group is the individual who was evolved on the trail, with the exception of the full trail. In the full trail, the individual evolved for this trail actually consumes a greater percentage of the trail. This is likely due to the decreased area of the trail: $16 \times 16$ in the easy trail versus $32 \times 32$ in the full trail. The smaller area means that an agent can wrap around the edge of the trail with fewer moves thus consuming more food in the limited number of moves.
 
 Figure~\ref{fig:trail_comparison_crn0} shows the same results without a hidden layer. Results for the medium are similar to the \gls{crn} with a hidden layer where it performs the best, but this is not the case for the other trails. With the easy, it seems that the agent consumes all food in front of it and at the first gap, it gets stuck and spins. The percentages of food consumed correspond exactly to the amount of food until the first gap for each trail. The hard results seem more likely that a wandering search is at play. With medium having the highest probability of finding food, it makes sense that wandering the trail for pieces and some reasonable turning strategy would find food. For the full trail, it is not as clear to make a conclusion.
 
 On the full trail evaluation without a hidden layer, it seems that there are a couple possibilities with these results. One is that the agent actually learned a method to solve the trail, but this seems unlikely. If this was the case, we would expect to see greater performance on the easier John Muir trail or the same on the easy segment of the Santa Fe trail. The more likely scenario is there was a wandering agent who got particular lucky on the full Santa Fe trail. This makes sense for the other trails, but this does not seem consistent in the medium trail. For the agent to get as much food as it did on the full Santa Fe trail, it would have had to make turns of some sort when it encountered food or a pattern of food then with food going away. It seems possible that if an agent got caught on a row that contained now food, it may just continue forward until it runs out of moves because it will never consume any more food on the row. Getting stuck on the wrong row seems like a potential explanation for these particular results.
 
-Figure~\ref{fig:hist_with_hidden_layer} and Figure~\ref{fig:hist_no_hidden_layer} show the number of individuals consuming each amount of food for with and without a hidden perceptron. In the results with a hidden peerceptron, we see that only one individaul accounted for the top performer on each trail. Others were not far behind of achieveing the top performance though with the easy trail being the largest gap. The hidden trail shows similar results with the exception of the full trail. The lack of a hidden neuron neuron on the hidden trail seems to point more towards a wandering individual scenario where the top two individuals at 37 and 51 pieces of food consumed had a lucky wandering strategy.
+Figure~\ref{fig:hist_with_hidden_layer} and Figure~\ref{fig:hist_no_hidden_layer} show the number of individuals consuming each amount of food for with and without a hidden perceptron. In the results with a hidden peerceptron, we see that only one individual accounted for the top performer on each trail. Others were not far behind of achieving the top performance though with the easy trail being the largest gap. The hidden trail shows similar results with the exception of the full trail. The lack of a hidden neuron neuron on the hidden trail seems to point more towards a wandering individual scenario where the top two individuals at 37 and 51 pieces of food consumed had a lucky wandering strategy.
 
 In summary, it seems that we have shown that we can partially solve the trails. In the case of the easy trail, we can conclude that we did solve this trail with the \gls{crn} with a hidden neuron consuming 100\% of the available food. For the medium, hard, and full trails, it is difficult to conclude if there was an individual who actually solved the trail or if there is strategic wandering of the trail leading to optimal values of food consumed. Based off the results, it seems that the addition of a hidden neuron seems to provide a slight edge in terms of strategic food gathering rather than wandering with luck. With the evolution charts presented by Jefferson and Koza, it seems that strategic wandering did occur to an extent early in their algorithms, but was eventually optimized out of the best individual.
 
-Another factor to consider is the \gls{ga} used on these trails. The \gls{ga} is similar to the one used on the non-\gls{crn} and did not go through the thorough optimization that the non-\gls{crn} \gls{ga} did to arrive at the ideal values. With the difference in how these two systems are implemented in a non-\gls{crn} and \gls{crn} environment, futher optimization of the \gls{ga} in a \gls{crn} would likely lead to better results. As shown in Figure~\ref{fig:coel_time_benchmark} and discussed earlier in this section,  such an optimization consumes a substantial amount of time with present models for \glspl{crn}. In addition, the non-\gls{crn} simulations were permitted to run for more than the limited 100 genrations we did in a \gls{crn} due to computational time. As the models and computational power continue to mature, this optimization may be more practical at a future time.
+Another factor to consider is the \gls{ga} used on these trails. The \gls{ga} is similar to the one used on the non-\gls{crn} and did not go through the thorough optimization that the non-\gls{crn} \gls{ga} did to arrive at the ideal values. With the difference in how these two systems are implemented in a non-\gls{crn} and \gls{crn} environment, further optimization of the \gls{ga} in a \gls{crn} would likely lead to better results. As shown in Figure~\ref{fig:coel_time_benchmark} and discussed earlier in this section,  such an optimization consumes a substantial amount of time with present models for \glspl{crn}. In addition, the non-\gls{crn} simulations were permitted to run for more than the limited 100 generations we did in a \gls{crn} due to computational time. As the models and computational power continue to mature, this optimization may be more practical at a future time.

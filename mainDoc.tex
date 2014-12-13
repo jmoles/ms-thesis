@@ -43,12 +43,17 @@
 \usepackage{tikz}
 % \usepackage{draftwatermark}        % TODO: Remove in Final Draft
 
+% Uncomment to print just the graphics.
+% \usepackage[active,pdftex,tightpage,floats]{preview}
+% \PreviewBorder=12pt\relax
+
 \usepackage{hyperref}
 \usepackage[acronym,toc]{glossaries}
 
 \makenoidxglossaries
 
 % \SetWatermarkScale{2.0}            % TODO: Remove this in Final Draft
+
 
 
 \input{chap/00_acronyms.tex}
@@ -116,7 +121,7 @@
 }
 \makeatother
 
-
+\def\hyph{-\penalty0\hskip0pt\relax}
 
 %==============================================================================
 \begin{document}
@@ -195,6 +200,11 @@
 \chapter{Chemical Reaction Network Trail Simulations}
 \label{chap:trail_simulations}
 \input{chap/25_chemsims.tex}
+
+\glsresetall
+\chapter{Chemical Reaction Network Realization}
+\label{chap:chem_real}
+\input{chap/30_chemreal.tex}
 
 \glsresetall
 \chapter{Conclusion}
